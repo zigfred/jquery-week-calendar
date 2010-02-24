@@ -1055,9 +1055,12 @@
          var eventTooShort = calEvent.end.getTime()-calEvent.start.getTime() <= (one_hour/options.timeslotsPerHour);
          if (eventTooShort){
 <<<<<<< HEAD:jquery.weekcalendar.js
+<<<<<<< HEAD:jquery.weekcalendar.js
 =======
            console.log("CHANGING ", calEvent.title);
 >>>>>>> Changed title for short events:jquery.weekcalendar.js
+=======
+>>>>>>> Removed log entry:jquery.weekcalendar.js
            $calEvent.find(".wc-time").html(self._formatDate(calEvent.start, options.timeFormat) + ": " + calEvent.title);
          }
          else {
