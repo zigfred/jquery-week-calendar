@@ -18,8 +18,7 @@
 (function($) {
 
    $.widget("ui.weekCalendar", {
-
-       options : {
+      options: {
          date: new Date(),
          timeFormat : "h:i a",
          dateFormat : "M d, Y",
@@ -66,7 +65,7 @@
          },
          eventResize : function(calEvent, element) {
          },
-         eventNew : function(calEvent, element) {
+         eventNew : function(calEvent, element, dayFreeBusyManager, calendar) {
          },
          eventMouseover : function(calEvent, $event) {
          },
@@ -81,22 +80,112 @@
          shortMonths : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
          longMonths : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
          shortDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-         longDays : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+         longDays : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+         /* multi-users options */
+         /**
+          * the available users for calendar.
+          * if you want to display users separately, enable the showAsSeparateUsers option.
+          * if you provide a list of user and do not enable showAsSeparateUsers option, then 
+          * only the events that belongs to one or several of given users
+          * @type {array}
+          */
+         users: [],
+         /**
+          * should the calendar be displayed with separate column for each users.
+          * note that this option does nothing if you do not provide at least one user.
+          * @type {boolean}
+          */
+         showAsSeparateUsers: true,
+         /**
+          * callback used to read user id from a user object.
+          * @param {Object} user the user to retrieve the id from
+          * @param {number} index the user index from user list
+          * @param {jQuery} calendar the calendar object
+          * @return {int|String} the user id 
+          */
+         getUserId: function(user, index, calendar){return index;},
+         /**
+          * callback used to read user name from a user object.
+          * @param {Object} user the user to retrieve the name from
+          * @param {number} index the user index from user list
+          * @param {jQuery} calendar the calendar object
+          * @return {String} the user name
+          */
+         getUserName: function(user, index, calendar){return user;},
+         /**
+          * reads the id(s) of user(s) for who the event should be displayed.
+          * @param {Object} calEvent the calEvent to read informations from
+          * @param {jQuery} calendar the calendar object
+          * @return {number|String|Array} the user id(s) to appened the events for
+          */
+         getEventUserId: function(calEvent, calendar){return calEvent.userId;},
+         /**
+          * sets user id(s) to the calEvent
+          * @param {Object} calEvent the calEvent to set informations to
+          * @param {jQuery} calendar the calendar object
+          * @return {Object} the calEvent with modified user id
+          */
+         setEventUserId: function(userId, calEvent, calendar){calEvent.userId = userId; return calEvent;},
+         /* freeBusy options */
+         /**
+          * should the calendar display freebusys ?
+          * @type {boolean}
+          */
+         displayFreeBusys: true,
+         /**
+          * read the id(s) for who the freebusy is available
+          * @param {Object} calEvent the calEvent to read informations from
+          * @param {jQuery} calendar the calendar object
+          * @return {number|String|Array} the user id(s) to appened the events for
+          */
+         getFreeBusyUserId: function(calFreeBusy, calendar){return calFreeBusy.userId;},
+         /**
+          * the default freeBusy object, used to manage default state
+          * @type {Object}
+          */
+         defaultFreeBusy: {free: false},
+         /**
+          * function used to display the freeBusy element
+          * @type {Function}
+          * @param {Object} freeBusy the freeBusy timeslot to render
+          * @param {jQuery} $freeBusy the freeBusy HTML element
+          * @param {jQuery} calendar the calendar element
+          */
+         freeBusyRender: function(freeBusy, $freeBusy, calendar){
+            if(!freeBusy.free)
+            {
+              $freeBusy.addClass('free-busy-busy');
+            }
+            else
+            {
+              $freeBusy.addClass('free-busy-free');
+            }
+            return $freeBusy;
+          },
+         /* other options */
+         /**
+          * true means start on first day of week, false means starts on startDate.
+          * @param {jQuery} calendar the calendar object
+          * @type {Function|bool}
+          */
+         startOnFirstDayOfWeek: function(calendar){return $(calendar).weekCalendar('option', 'daysToShow') >= 5;},
+         /**
+          * should the columns be rendered alternatively using odd/even class
+          * @type {boolean}
+          */
+         displayOddEven: true,
+         textSize: 13
       },
 
       /***********************
        * Initialise calendar *
        ***********************/
       _create : function() {
-
          var self = this;
          self._computeOptions();
          self._setupEventDelegation();
-
          self._renderCalendar();
-
          self._loadCalEvents();
-
          self._resizeCalendar();
          self._scrollToHour(self.options.date.getHours());
 
@@ -107,7 +196,6 @@
 
       },
 
-
       /********************
        * public functions *
        ********************/
@@ -115,6 +203,7 @@
        * Refresh the events for the currently displayed week.
        */
       refresh : function() {
+         this._clearCalendar();
          this._loadCalEvents(this.element.data("startDate")); //reload with existing week
       },
 
@@ -159,6 +248,33 @@
       gotoWeek : function(date) {
          this._clearCalendar();
          this._loadCalEvents(date);
+      },
+
+      /*
+       * Reload the calendar to whatever week the date passed in falls on.
+       */
+      gotoDate : function(date) {
+         this._clearCalendar();
+         this._loadCalEvents(date);
+      },
+
+      /**
+       * change the number of days to show
+       */
+      setDaysToShow: function(daysToShow){
+         var self = this;
+         var hour = self._getCurrentScrollHour();
+         self.options.daysToShow = daysToShow;
+         $(self.element).html('');
+         self._renderCalendar();
+         self._loadCalEvents();
+         self._resizeCalendar();
+         self._scrollToHour(hour);
+
+         $(window).unbind("resize.weekcalendar");
+         $(window).bind("resize.weekcalendar", function() {
+            self._resizeCalendar();
+         });
       },
 
       /*
@@ -218,8 +334,8 @@
          var firstHourDisplayed = options.businessHours.limitDisplay ? options.businessHours.start : 0;
          var startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), firstHourDisplayed);
 
-         var times = []
-         var startMillis = startDate.getTime();
+         var times = [],
+             startMillis = startDate.getTime();
          for (var i = 0; i < options.timeslotsPerDay; i++) {
             var endMillis = startMillis + options.millisPerTimeslot;
             times[i] = {
@@ -249,25 +365,27 @@
          }
       },
 
+      serializeEvents: function()
+      {
+        var calEvents = [];
 
-
-
-
+        $("#calendar").find(".wc-cal-event").each(function(){
+            calEvents.push($(this).data("calEvent"));
+        }); 
+        return calEvents;
+      },
 /*
       getData : function(key) {
          return this._getData(key);
       },
-      */
+*/
 
       /*********************
        * private functions *
        *********************/
-
-
       _setOption: function(key, value) {
          var self = this;
          if(self.options[key] != value) {
-
             // this could be made more efficient at some stage by caching the
             // events array locally in a store but this should be done in conjunction
             // with a proper binding model.
@@ -278,11 +396,9 @@
 
             var newOptions = {};
             newOptions[key] = value;
-            self._renderEvents({events:currentEvents, options: newOptions}, self.element.find(".wc-day-column-inner"))
+            self._renderEvents({events:currentEvents, options: newOptions}, self.element.find(".wc-day-column-inner"));
         }
-
-	   },
-      
+     },
 
       // compute dynamic options based on other config values
       _computeOptions : function() {
@@ -322,14 +438,17 @@
          var self = this;
          var options = this.options;
          this.element.click(function(event) {
-            var $target = $(event.target);
+            var $target = $(event.target),
+                freeBusyManager;
             if ($target.data("preventClick")) {
                return;
             }
             if ($target.hasClass("wc-cal-event")) {
-               options.eventClick($target.data("calEvent"), $target, event);
+               freeBusyManager = self.getFreeBusyManagerForEvent($target.data("calEvent"));
+               options.eventClick($target.data("calEvent"), $target, freeBusyManager, event);
             } else if ($target.parent().hasClass("wc-cal-event")) {
-               options.eventClick($target.parent().data("calEvent"), $target.parent(), event);
+               freeBusyManager = self.getFreeBusyManagerForEvent($target.parent().data("calEvent"));
+               options.eventClick($target.parent().data("calEvent"), $target.parent(), freeBusyManager, event);
             }
          }).mouseover(function(event) {
             var $target = $(event.target);
@@ -346,8 +465,9 @@
             if (self._isDraggingOrResizing($target)) {
                return;
             }
-            if ($target.hasClass("wc-cal-event")) {
-               if ($target.data("sizing")) return;
+            if ($target.hasClass("wc-cal-event")) 
+            {
+               if ($target.data("sizing")){ return;}
                options.eventMouseout($target.data("calEvent"), $target, event);
 
             }
@@ -366,107 +486,400 @@
        */
       _renderCalendar : function() {
 
-         var $calendarContainer, calendarNavHtml, calendarHeaderHtml, calendarBodyHtml, $weekDayColumns;
-         var self = this;
-         var options = this.options;
+        var $calendarContainer, $weekDayColumns;
+        var self = this;
+        var options = this.options;
 
-         $calendarContainer = $("<div class=\"wc-container\">").appendTo(self.element);
+        $calendarContainer = $("<div class=\"wc-container\">").appendTo(self.element);
 
-         if (options.buttons) {
-            calendarNavHtml = "<div class=\"wc-nav\">\
-                    <button class=\"wc-today\">" + options.buttonText.today + "</button>\
-                    <button class=\"wc-prev\">" + options.buttonText.lastWeek + "</button>\
-                    <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
-                    </div>";
+        //render the different parts
+          // nav links
+        self._renderCalendarButtons($calendarContainer);
+          // header
+        self._renderCalendarHeader($calendarContainer);
+          // body
+        self._renderCalendarBody($calendarContainer);
 
-            $(calendarNavHtml).appendTo($calendarContainer);
-
-            $calendarContainer.find(".wc-nav .wc-today").click(function() {
-               self.element.weekCalendar("today");
-               return false;
-            });
-
-            $calendarContainer.find(".wc-nav .wc-prev").click(function() {
-               self.element.weekCalendar("prevWeek");
-               return false;
-            });
-
-            $calendarContainer.find(".wc-nav .wc-next").click(function() {
-               self.element.weekCalendar("nextWeek");
-               return false;
-            });
-
-         }
-
-         //render calendar header
-         calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"></td>";
-         for (var i = 1; i <= options.daysToShow; i++) {
-            calendarHeaderHtml += "<td class=\"wc-day-column-header wc-day-" + i + "\"></td>";
-         }
-         calendarHeaderHtml += "<td class=\"wc-scrollbar-shim\"></td></tr></tbody></table>";
-
-         //render calendar body
-         calendarBodyHtml = "<div class=\"wc-scrollable-grid\">\
-                <table class=\"wc-time-slots\">\
-                <tbody>\
-                <tr>\
-                <td class=\"wc-grid-timeslot-header\"></td>\
-                <td colspan=\"" + options.daysToShow + "\">\
-                <div class=\"wc-time-slot-wrapper\">\
-                <div class=\"wc-time-slots\">";
-
-         var start = options.businessHours.limitDisplay ? options.businessHours.start : 0;
-         var end = options.businessHours.limitDisplay ? options.businessHours.end : 24;
-
-         for (var i = start; i < end; i++) {
-            for (var j = 0; j < options.timeslotsPerHour - 1; j++) {
-               calendarBodyHtml += "<div class=\"wc-time-slot\"></div>";
-            }
-            calendarBodyHtml += "<div class=\"wc-time-slot wc-hour-end\"></div>";
-         }
-
-         calendarBodyHtml += "</div></div></td></tr><tr><td class=\"wc-grid-timeslot-header\">";
-
-         for (var i = start; i < end; i++) {
-
-            var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "wc-business-hours" : "";
-            calendarBodyHtml += "<div class=\"wc-hour-header " + bhClass + "\">"
-            if (options.use24Hour) {
-               calendarBodyHtml += "<div class=\"wc-time-header-cell\">" + self._24HourForIndex(i) + "</div>";
-            } else {
-               calendarBodyHtml += "<div class=\"wc-time-header-cell\">" + self._hourForIndex(i) + "<span class=\"wc-am-pm\">" + self._amOrPm(i) + "</span></div>";
-            }
-            calendarBodyHtml += "</div>";
-         }
-
-         calendarBodyHtml += "</td>";
-
-         for (var i = 1; i <= options.daysToShow; i++) {
-            calendarBodyHtml += "<td class=\"wc-day-column day-" + i + "\"><div class=\"wc-day-column-inner\"></div></td>"
-         }
-
-         calendarBodyHtml += "</tr></tbody></table></div>";
-
-         //append all calendar parts to container
-         $(calendarHeaderHtml + calendarBodyHtml).appendTo($calendarContainer);
-
-         $weekDayColumns = $calendarContainer.find(".wc-day-column-inner");
-         $weekDayColumns.each(function(i, val) {
-            $(this).height(options.timeslotHeight * options.timeslotsPerDay);
+        $weekDayColumns = $calendarContainer.find(".wc-day-column-inner");
+        $weekDayColumns.each(function(i, val) {
             if (!options.readonly) {
                self._addDroppableToWeekDay($(this));
                self._setupEventCreationForWeekDay($(this));
             }
-         });
+        });
+      },
 
-         $calendarContainer.find(".wc-time-slot").height(options.timeslotHeight - 1); //account for border
+      /**
+       * render the nav buttons on top of the calendar
+       */
+      _renderCalendarButtons: function($calendarContainer)
+      {
+        var self = this, options = this.options;
+        if (options.buttons) {
+           var calendarNavHtml = "<div class=\"wc-nav\">\
+                   <button class=\"wc-today\">" + options.buttonText.today + "</button>\
+                   <button class=\"wc-prev\">" + options.buttonText.lastWeek + "</button>\
+                   <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
+                   </div>";
 
-         $calendarContainer.find(".wc-time-header-cell").css({
-            height :  (options.timeslotHeight * options.timeslotsPerHour) - 11,
-            padding: 5
-         });
+           $(calendarNavHtml).appendTo($calendarContainer);
 
+           $calendarContainer.find(".wc-nav .wc-today").click(function() {
+              self.element.weekCalendar("today");
+              return false;
+           });
 
+           $calendarContainer.find(".wc-nav .wc-prev").click(function() {
+              if(self._startOnFirstDayOfWeek())
+              {
+                self.element.weekCalendar("prevWeek");
+              }
+              else
+              {
+                var newDate = new Date(self.element.data("startDate").getTime());
+                newDate.setDate(newDate.getDate() - self.options.daysToShow)
+                self.element.weekCalendar("gotoDate", newDate);
+              }
+              return false;
+           });
+
+           $calendarContainer.find(".wc-nav .wc-next").click(function() {
+              if(self._startOnFirstDayOfWeek())
+              {
+                self.element.weekCalendar("nextWeek");
+              }
+              else
+              {
+                var newDate = new Date(self.element.data("startDate").getTime());
+                newDate.setDate(newDate.getDate() + self.options.daysToShow)
+                self.element.weekCalendar("gotoDate", newDate);
+              }
+              return false;
+           });
+        }
+      },
+
+      /**
+       * render the calendar header, including date and user header
+       */
+      _renderCalendarHeader: function($calendarContainer)
+      {
+        var self = this, options = this.options,
+            showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+            rowspan="", calendarHeaderHtml;
+
+        if(showAsSeparatedUser)
+        {
+          rowspan = " rowspan=\"2\"";
+          colspan = " colspan=\""+options.users.length+"\" ";
+        }
+
+        //first row
+        calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"" + rowspan + "></td>";
+        for (var i = 1; i <= options.daysToShow; i++) 
+        {
+          calendarHeaderHtml += "<td class=\"wc-day-column-header wc-day-" + i + "\""+colspan+"></td>";
+        }
+        calendarHeaderHtml += "<td class=\"wc-scrollbar-shim\"" + rowspan + "></td></tr>";
+
+        //users row
+        if(showAsSeparatedUser)
+        {
+          calendarHeaderHtml += "<tr>";
+          var uLength = options.users.length;
+
+          for (var i = 1; i <= options.daysToShow; i++)
+          {
+            for(var j = 0; j< uLength; j++)
+            {
+               calendarHeaderHtml+= "<td>";
+               calendarHeaderHtml+=   "<div class=\"wc-user-header wc-day-" + i + " wc-user-" + self._getUserIdFromIndex(j) + "\" >";
+               calendarHeaderHtml+=     self._getUserName(j);
+               calendarHeaderHtml+=   "</div>";
+              calendarHeaderHtml += "</td>";
+            }
+          }
+          calendarHeaderHtml+= "</tr>";
+        }
+        //close the header
+        calendarHeaderHtml += "</tbody></table>";
+
+        $(calendarHeaderHtml).appendTo($calendarContainer);
+      },
+
+      /**
+       * render the calendar body.
+       * Calendar body is composed of several distinct parts.
+       * Each part is displayed in a separated row to ease rendering.
+       * for further explanations, see each part rendering function.
+       */
+      _renderCalendarBody: function($calendarContainer)
+      {
+        var self = this, options = this.options,
+            showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+            $calendarBody, $calendarTableTbody;
+        // create the structure
+        $calendarBody = "<div class=\"wc-scrollable-grid\">";
+        $calendarBody+= "<table class=\"wc-time-slots\">";
+        $calendarBody+= "<tbody>";
+        $calendarBody+= "</tbody>";
+        $calendarBody+= "</table>";
+        $calendarBody+= "</div>";
+        $calendarBody = $($calendarBody);
+        $calendarTableTbody = $calendarBody.find('tbody');
+        
+        self._renderCalendarBodyTimeSlots($calendarTableTbody);
+        self._renderCalendarBodyOddEven($calendarTableTbody);
+        self._renderCalendarBodyFreeBusy($calendarTableTbody);
+        self._renderCalendarBodyEvents($calendarTableTbody);
+
+        $calendarBody.appendTo($calendarContainer);
+
+        //set the column height
+        $calendarContainer.find('.wc-full-height-column').height(options.timeslotHeight * options.timeslotsPerDay);
+        //set the timeslot height
+        $calendarContainer.find(".wc-time-slot").height(options.timeslotHeight - 1); //account for border
+        //init the time row header height
+        /**
+  TODO    if total height for an hour is less than 11px, there is a display problem.
+          Find a way to handle it
+        */
+        $calendarContainer.find(".wc-time-header-cell").css({
+          height :  (options.timeslotHeight * options.timeslotsPerHour) - 11,
+          padding: 5
+        });
+        //add the user data to every impacted column
+        if(showAsSeparatedUser)
+        {
+          for(var i=0, uLength=options.users.length; i < uLength; i++)
+          {
+            $calendarContainer.find('.wc-user-' + self._getUserIdFromIndex(i))
+                  .data('wcUser', options.users[i])
+                  .data('wcUserIndex', i)
+                  .data('wcUserId', self._getUserIdFromIndex(i));
+          }
+        }
+      },
+
+      /**
+       * render the timeslots separation 
+       */
+      _renderCalendarBodyTimeSlots: function($calendarTableTbody)
+      {
+        var self = this, options = this.options,
+            renderRow, i, j,
+            showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+            start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
+            end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 ),
+            rowspan = 1;
+
+        //calculate the rowspan
+        if(this.options.displayOddEven){ rowspan+= 1; }
+        if(this.options.displayFreeBusys){ rowspan+= 1; }
+        if(rowspan > 1)
+        {
+          rowspan = " rowspan=\""+rowspan+"\"";
+        }
+        else
+        {
+          rowspan = "";
+        }
+
+        renderRow = "<tr class=\"wc-grid-row-timeslot\">";
+        renderRow+=  "<td class=\"wc-grid-timeslot-header\""+rowspan+"></td>";
+        renderRow+=  "<td colspan=\"" + options.daysToShow * (showAsSeparatedUser ? options.users.length : 1) + "\">";
+        renderRow+=    "<div class=\"wc-no-height-wrapper wc-time-slot-wrapper\">";
+        renderRow+=      "<div class=\"wc-time-slots\">";
+
+        for (i = start; i < end; i++) {
+          for (j = 0; j < options.timeslotsPerHour - 1; j++) 
+          {
+            renderRow+= "<div class=\"wc-time-slot\"></div>";
+          }
+          renderRow+= "<div class=\"wc-time-slot wc-hour-end\"></div>";
+        }
+
+        renderRow+=      "</div>";
+        renderRow+=    "</div>";
+        renderRow+=  "</td>";
+        renderRow+= "</tr>";
+
+        $(renderRow).appendTo($calendarTableTbody);
+      },
+
+      /**
+       * render the odd even columns
+       */
+      _renderCalendarBodyOddEven: function($calendarTableTbody)
+      {
+        if(this.options.displayOddEven)
+        {
+          var self = this, options = this.options,
+              renderRow, i, j,
+              showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+              start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
+              end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 ),
+              oddEven;
+
+          renderRow = "<tr class=\"wc-grid-row-oddeven\">";
+
+          //prepare for multi-user view
+          if(showAsSeparatedUser)
+          {
+            var uLength   = options.users.length;
+          }
+
+          //now let's display oddEven placeholders
+          for (var i = 1; i <= options.daysToShow; i++)
+          {
+            if(options.displayOddEven)
+            {
+              if(!showAsSeparatedUser)
+              {
+                oddEven = ( oddEven == "even" ? 'odd' : 'even' );
+                renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
+                renderRow+=   "<div class=\"wc-no-height-wrapper wc-oddeven-wrapper\">";
+                renderRow+=     "<div class=\"wc-full-height-column wc-column-" + oddEven + "\"></div>";
+                renderRow+=   "</div>";
+                renderRow+= "</td>";
+              }
+              else
+              {
+                for(var j = 0; j< uLength; j++)
+                {
+                   oddEven = ( oddEven == "odd" ? 'even' : 'odd' );
+                   renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
+                   renderRow+=   "<div class=\"wc-no-height-wrapper wc-oddeven-wrapper\">";
+                   renderRow+=     "<div class=\"wc-full-height-column wc-column-" + oddEven + "\" ></div>";
+                   renderRow+=   "</div>";
+                   renderRow+= "</td>";
+                }
+              }
+            }
+          }
+          renderRow+= "</tr>";
+
+          $(renderRow).appendTo($calendarTableTbody);
+        }
+      },
+
+      /**
+       * render the freebusy placeholders
+       */
+      _renderCalendarBodyFreeBusy: function($calendarTableTbody)
+      {
+        if(this.options.displayFreeBusys)
+        {
+          var self = this, options = this.options,
+              renderRow, i, j,
+              showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+              start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
+              end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 );
+          renderRow = "<tr class=\"wc-grid-row-freebusy\">";
+          renderRow+=  "</td>";
+
+          //prepare for multi-user view
+          if(showAsSeparatedUser)
+          {
+            var uLength   = options.users.length;
+          }
+
+          //now let's display freebusy placeholders
+          for (var i = 1; i <= options.daysToShow; i++)
+          {
+            if(options.displayFreeBusys)
+            {
+              if(!showAsSeparatedUser)
+              {
+                renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
+                renderRow+=   "<div class=\"wc-no-height-wrapper wc-freebusy-wrapper\">";
+                renderRow+=     "<div class=\"wc-full-height-column wc-column-freebusy wc-day-" + i + "\"></div>";
+                renderRow+=   "</div>";
+                renderRow+= "</td>";
+              }
+              else
+              {
+                for(var j = 0; j< uLength; j++)
+                {
+                   renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
+                   renderRow+=   "<div class=\"wc-no-height-wrapper wc-freebusy-wrapper\">";
+                   renderRow+=     "<div class=\"wc-full-height-column wc-column-freebusy wc-day-" + i 
+                   renderRow+=                     " wc-user-" + self._getUserIdFromIndex(j) + "\">";
+                   renderRow+=     "</div>";
+                   renderRow+=   "</div>";
+                   renderRow+= "</td>";
+                }
+              }
+            }
+          }
+
+          renderRow+= "</tr>";
+
+          $(renderRow).appendTo($calendarTableTbody);
+        }
+      },
+
+      /**
+       * render the calendar body for event placeholders
+       */
+      _renderCalendarBodyEvents: function($calendarTableTbody)
+      {
+        var self = this, options = this.options,
+            renderRow, i, j,
+            showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+            start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
+            end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 );
+        renderRow = "<tr class=\"wc-grid-row-events\">";
+        renderRow+=  "<td class=\"wc-grid-timeslot-header\">"
+        for (var i = start; i < end; i++)
+        {
+          var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "wc-business-hours" : "";
+          renderRow+= "<div class=\"wc-hour-header " + bhClass + "\">";
+          if (options.use24Hour)
+          {
+            renderRow+= "<div class=\"wc-time-header-cell\">" + self._24HourForIndex(i) + "</div>";
+          }
+          else
+          {
+            renderRow+= "<div class=\"wc-time-header-cell\">" + self._hourForIndex(i) + "<span class=\"wc-am-pm\">" + self._amOrPm(i) + "</span></div>";
+          }
+          renderRow+= "</div>";
+        }
+        renderRow+=  "</td>";
+
+        //prepare for multi-user view
+        if(showAsSeparatedUser)
+        {
+          var uLength   = options.users.length;
+          var columnclass;
+        }
+
+        //now let's display events placeholders
+        for (var i = 1; i <= options.daysToShow; i++)
+        {
+          if(!showAsSeparatedUser)
+          {
+            renderRow+= "<td class=\"wc-day-column wc-day-column-first day-" + i + "\">";
+            renderRow+= "<div class=\"wc-full-height-column wc-day-column-inner day-" + i + "\"></div>";
+            renderRow+= "</td>";
+          }
+          else
+          {
+            for(var j = 0; j< uLength; j++)
+            {
+              columnclass = j ? ((j == uLength - 1) ? "wc-day-column-last" :  "wc-day-column-middle" ) : "wc-day-column-first";
+              renderRow+= "<td class=\"wc-day-column " + columnclass + " day-" + i + "\">";
+              renderRow+=   "<div class=\"wc-full-height-column wc-day-column-inner day-" + i 
+              renderRow+=      " wc-user-" + self._getUserIdFromIndex(j) + "\">";
+              renderRow+=   "</div>";
+              renderRow+= "</td>";
+            }
+          }
+        }
+
+        renderRow+= "</tr>";
+
+        $(renderRow).appendTo($calendarTableTbody);
       },
 
       /*
@@ -524,6 +937,19 @@
 
                $newEvent.remove();
                var newCalEvent = {start: eventDuration.start, end: eventDuration.end, title: options.newEventText};
+               var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
+
+               if(showAsSeparatedUser)
+               {
+                 newCalEvent = self._setEventUserId(newCalEvent, $weekDay.data('wcUserId'));
+               }
+               else if(!options.showAsSeparateUsers && options.users && options.users.length == 1)
+               {
+                 newCalEvent = self._setEventUserId(newCalEvent, self._getUserIdFromIndex(0));
+               }
+
+               var freeBusyManager = self.getFreeBusyManagerForEvent(newCalEvent);
+
                var $renderedCalEvent = self._renderEvent(newCalEvent, $weekDay);
 
                if (!options.allowCalEventOverlap) {
@@ -533,7 +959,7 @@
                   self._adjustOverlappingEvents($weekDay);
                }
 
-               options.eventNew(eventDuration, $renderedCalEvent);
+               options.eventNew(newCalEvent, $renderedCalEvent, freeBusyManager, self.element);
             }
          });
       },
@@ -545,13 +971,10 @@
 
          var date, weekStartDate, endDate, $weekDayColumns;
          var self = this;
-
-
-
          var options = this.options;
          date = dateWithinWeek || options.date;
+         this.options.date = date;
          weekStartDate = self._dateFirstDayOfWeek(date);
-
          weekEndDate = self._dateLastMilliOfWeek(date);
 
          options.calendarBeforeLoad(self.element);
@@ -569,9 +992,17 @@
             var jsonOptions = {};
             jsonOptions[options.startParam || 'start'] = Math.round(weekStartDate.getTime() / 1000);
             jsonOptions[options.endParam || 'end'] = Math.round(weekEndDate.getTime() / 1000);
-            $.getJSON(options.data, jsonOptions, function(data) {
-               self._renderEvents(data, $weekDayColumns);
-               if (options.loading) options.loading(false);
+            $.ajax({
+              url: options.data, 
+              data: jsonOptions, 
+              dataType: 'json',
+              error: function(XMLHttpRequest, textStatus, errorThrown){
+                alert('unable to get data, error:' + textStatus);
+              },
+              success: function(data) {
+                 self._renderEvents(data, $weekDayColumns);
+                 if (options.loading) options.loading(false);
+              }
             });
          }
          else if ($.isFunction(options.data)) {
@@ -596,6 +1027,7 @@
          var self = this;
          var options = this.options;
          var currentDay = self._cloneDate(self.element.data("startDate"));
+         var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
 
          self.element.find(".wc-header td.wc-day-column-header").each(function(i, val) {
 
@@ -623,9 +1055,26 @@
                $(this).parent().removeClass("wc-today");
             }
 
-            currentDay = self._addDays(currentDay, 1);
+            if(!showAsSeparatedUser || !((i+1)%options.users.length))
+            {
+              currentDay = self._addDays(currentDay, 1);
+            }
          });
 
+         //now update the freeBusy placeholders
+         if(options.displayFreeBusys)
+         {
+            currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
+            self.element.find('.wc-grid-row-freebusy .wc-column-freebusy').each(function(i, val){
+              $(this).data("startDate", self._cloneDate(currentDay));
+              $(this).data("endDate", new Date(currentDay.getTime() + (MILLIS_IN_DAY)));
+              if(!showAsSeparatedUser || !((i+1)%options.users.length))
+              {
+                currentDay = self._addDays(currentDay, 1);
+              }
+            });
+         }
+         self._clearFreeBusys();
       },
 
       /*
@@ -639,12 +1088,6 @@
          var options = this.options;
          var eventsToRender;
 
-         if ($.isArray(data)) {
-            eventsToRender = self._cleanEvents(data);
-         } else if (data.events) {
-            eventsToRender = self._cleanEvents(data.events);
-         }
-          
          if (data.options) {
 
             var updateLayout = false;
@@ -669,6 +1112,13 @@
          }
 
 
+         if ($.isArray(data)) {
+            eventsToRender = self._cleanEvents(data);
+         } else if (data.events) {
+            eventsToRender = self._cleanEvents(data.events);
+           //render the freebusys
+           self._renderFreeBusys(data);
+         }
          $.each(eventsToRender, function(i, calEvent) {
 
             var $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
@@ -701,32 +1151,43 @@
             return; // can't render a negative height
          }
 
-         var eventClass, eventHtml, $calEvent, $modifiedEvent;
+         var eventClass, eventHtml, $calEventList, $modifiedEvent;
 
          eventClass = calEvent.id ? "wc-cal-event" : "wc-cal-event wc-new-cal-event";
          eventHtml = "<div class=\"" + eventClass + " ui-corner-all\">\
                 <div class=\"wc-time ui-corner-all\"></div>\
                 <div class=\"wc-title\"></div></div>";
 
-         $calEvent = $(eventHtml);
-         $modifiedEvent = options.eventRender(calEvent, $calEvent);
-         $calEvent = $modifiedEvent ? $modifiedEvent.appendTo($weekDay) : $calEvent.appendTo($weekDay);
-         $calEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
+         $weekDay.each(function(){
+           var $calEvent = $(eventHtml);
+           $modifiedEvent = options.eventRender(calEvent, $calEvent);
+           $calEvent = $modifiedEvent ? $modifiedEvent.appendTo($(this)) : $calEvent.appendTo($(this));
+           $calEvent.css({lineHeight: (options.textSize + 2) + "px", fontSize: options.textSize + "px"});
 
-         self._refreshEventDetails(calEvent, $calEvent);
-         self._positionEvent($weekDay, $calEvent);
-         $calEvent.show();
+           self._refreshEventDetails(calEvent, $calEvent);
+           self._positionEvent($(this), $calEvent);
 
-         if (!options.readonly && options.resizable(calEvent, $calEvent)) {
-            self._addResizableToCalEvent(calEvent, $calEvent, $weekDay)
+           //add to event list
+           if($calEventList)
+           {
+             $calEventList = $calEventList.add($calEvent);
+           }
+           else
+           {
+             $calEventList = $calEvent;
+           }
+         });
+         $calEventList.show();
+
+         if (!options.readonly && options.resizable(calEvent, $calEventList)) {
+            self._addResizableToCalEvent(calEvent, $calEventList, $weekDay)
          }
-         if (!options.readonly && options.draggable(calEvent, $calEvent)) {
-            self._addDraggableToCalEvent(calEvent, $calEvent);
+         if (!options.readonly && options.draggable(calEvent, $calEventList)) {
+            self._addDraggableToCalEvent(calEvent, $calEventList);
          }
+         options.eventAfterRender(calEvent, $calEventList);
 
-         options.eventAfterRender(calEvent, $calEvent);
-
-         return $calEvent;
+         return $calEventList;
 
       },
 
@@ -824,13 +1285,33 @@
        */
       _findWeekDayForEvent : function(calEvent, $weekDayColumns) {
 
-         var $weekDay;
-         $weekDayColumns.each(function() {
-            if ($(this).data("startDate").getTime() <= calEvent.start.getTime() && $(this).data("endDate").getTime() >= calEvent.end.getTime()) {
-               $weekDay = $(this);
-               return false;
+         var $weekDay,
+             options = this.options,
+             showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+             user_ids = this._getEventUserId(calEvent);
+         
+         if(!$.isArray(user_ids))
+         {
+           user_ids = [user_ids];
+         }
+
+         $weekDayColumns.each(function(index, curDay) {
+            if (
+                    $(this).data("startDate").getTime() <= calEvent.start.getTime() 
+                &&  $(this).data("endDate").getTime() >= calEvent.end.getTime()
+                && ( !showAsSeparatedUser || $.inArray($(this).data("wcUserId"), user_ids) !== -1 )
+            ) {
+               if($weekDay)
+               {
+                $weekDay = $weekDay.add($(curDay));
+               }
+               else
+               {
+                $weekDay = $(curDay);
+               }
             }
          });
+
          return $weekDay;
       },
 
@@ -846,18 +1327,21 @@
             self.element.find(".wc-cal-event").each(function() {
                if ($(this).data("calEvent").id === calEvent.id || $(this).hasClass("wc-new-cal-event")) {
                   $(this).remove();
-                  return false;
+             //     return false;
                }
             });
          }
 
-         var $weekDay = self._findWeekDayForEvent(calEvent, self.element.find(".wc-time-slots .wc-day-column-inner"));
-         if ($weekDay) {
-            var $calEvent = self._renderEvent(calEvent, $weekDay);
-            self._adjustForEventCollisions($weekDay, $calEvent, calEvent, calEvent);
-            self._refreshEventDetails(calEvent, $calEvent);
-            self._positionEvent($weekDay, $calEvent);
-            self._adjustOverlappingEvents($weekDay);
+         var $weekDays = self._findWeekDayForEvent(calEvent, self.element.find(".wc-grid-row-events .wc-day-column-inner"));
+         if ($weekDays) {
+           $weekDays.each(function(index, weekDay){
+             var $weekDay = $(weekDay);
+             var $calEvent = self._renderEvent(calEvent, $weekDay);
+             self._adjustForEventCollisions($weekDay, $calEvent, calEvent, calEvent);
+             self._refreshEventDetails(calEvent, $calEvent);
+             self._positionEvent($weekDay, $calEvent);
+             self._adjustOverlappingEvents($weekDay);
+           });
          }
       },
 
@@ -922,7 +1406,7 @@
                adjustedEnd = currentCalEvent.start;
             }
             //has been dropped inside existing event with same or larger duration
-            if (oldCalEvent.resizable == false || (newCalEvent.end.getTime() <= currentCalEvent.end.getTime()
+            if ( oldCalEvent.resizable == false || (newCalEvent.end.getTime() <= currentCalEvent.end.getTime()
                   && newCalEvent.start.getTime() >= currentCalEvent.start.getTime())) {
 
                adjustedStart = oldCalEvent.start;
@@ -986,10 +1470,36 @@
                var top = Math.round(parseInt(ui.position.top));
                var eventDuration = self._getEventDurationFromPositionedEventElement($weekDay, $calEvent, top);
                var calEvent = $calEvent.data("calEvent");
-
-                
-
                var newCalEvent = $.extend(true, {}, calEvent, {start: eventDuration.start, end: eventDuration.end});
+//               var newCalEvent = $.extend(false, calEvent, {start: eventDuration.start, end: eventDuration.end});
+               var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
+                if(showAsSeparatedUser)
+                {
+                  // we may have dragged the event on column with a new user.
+                  // nice way to handle that is:
+                  //  - get the newly dragged on user
+                  //  - check if user is part of the event
+                  //  - if yes, nothing changes, if not, find the old owner to remove it and add new one
+                  var newUserId = $weekDay.data('wcUserId');
+                  var userIdList = self._getEventUserId(calEvent);
+                  var oldUserId = $(ui.draggable.parents('.wc-day-column-inner').get(0)).data('wcUserId');
+                  if(!$.isArray(userIdList))
+                  {
+                    userIdList = [userIdList];
+                  }
+                  if($.inArray(newUserId, userIdList) == -1)
+                  {
+                    // remove old user
+                    var _index = $.inArray(oldUserId, userIdList);
+                    userIdList.splice(_index, 1);
+                    // add new user ?
+                    if($.inArray(newUserId, userIdList) == -1)
+                    {
+                      userIdList.push(newUserId);
+                    }
+                  }
+                  newCalEvent = self._setEventUserId(newCalEvent, ((userIdList.length == 1) ? userIdList[0] : userIdList));
+                }
                self._adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent, true);
                var $weekDayColumns = self.element.find(".wc-day-column-inner");
 
@@ -1029,8 +1539,9 @@
             minHeight: options.timeslotHeight,
             stop :function(event, ui) {
                var $calEvent = ui.element;
-               var newEnd = new Date($calEvent.data("calEvent").start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
+               var newEnd = new Date($calEvent.data("calEvent").start.getTime() + (ui.size.height / options.timeslotHeight) * options.millisPerTimeslot);
                var newCalEvent = $.extend(true, {}, calEvent, {start: calEvent.start, end: newEnd});
+               //var newCalEvent = $.extend($.extend({}, calEvent), {start: calEvent.start, end: newEnd});
                self._adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent);
 
                self._refreshEventDetails(newCalEvent, $calEvent);
@@ -1052,6 +1563,7 @@
       _refreshEventDetails : function(calEvent, $calEvent) {
          var self = this;
          var options = this.options;
+         //$calEvent.find(".wc-time").html(self._formatDate(calEvent.start, options.timeFormat) + options.timeSeparator + self._formatDate(calEvent.end, options.timeFormat));
          var one_hour = 3600000;
          var displayTitleWithTime = calEvent.end.getTime()-calEvent.start.getTime() <= (one_hour/options.timeslotsPerHour);
          if (displayTitleWithTime){
@@ -1069,6 +1581,7 @@
        */
       _clearCalendar : function() {
          this.element.find(".wc-day-column-inner div").remove();
+         this._clearFreeBusys();
       },
 
       /*
@@ -1082,7 +1595,7 @@
          if (self.options.businessHours.limitDisplay) {
             if (hour <= self.options.businessHours.start) {
                slot = 0;
-            } else if (hour > self.options.businessHours.end) {
+            } else if (hour >= self.options.businessHours.end) {
                slot = self.options.businessHours.end -
                self.options.businessHours.start - 1;
             } else {
@@ -1182,36 +1695,34 @@
       /*
        * returns the date on the first millisecond of the week
        */
-
       _dateFirstDayOfWeek : function(date) {
          var self = this;
          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
          var adjustedDate = new Date(midnightCurrentDate);
          adjustedDate.setDate(adjustedDate.getDate() - self._getAdjustedDayIndex(midnightCurrentDate));
-
          return adjustedDate;
-
-      },
+       },
 
        /*
        * returns the date on the first millisecond of the last day of the week
        */
        _dateLastDayOfWeek : function(date) {
-
-
          var self = this;
          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
          var adjustedDate = new Date(midnightCurrentDate);
-         adjustedDate.setDate(adjustedDate.getDate() + (6 - this._getAdjustedDayIndex(midnightCurrentDate)));
-
+         var daysToAdd = (self.options.daysToShow - 1 - self._getAdjustedDayIndex(midnightCurrentDate));
+         adjustedDate.setDate(adjustedDate.getDate() + daysToAdd );
          return adjustedDate;
-          
-       },
+      },
 
       /*
        * gets the index of the current day adjusted based on options
        */
       _getAdjustedDayIndex : function(date) {
+         if(!this._startOnFirstDayOfWeek())
+         {
+           return 0;
+         }
 
          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
          var currentDayOfStandardWeek = midnightCurrentDate.getDay();
@@ -1289,20 +1800,21 @@
          for (var i = 0; i < format.length; i++) {
             var curChar = format.charAt(i);
             if ($.isFunction(this._replaceChars[curChar])) {
-	           var res = this._replaceChars[curChar](date, options);
-
-	           if (res === '00' && options.alwaysDisplayTimeMinutes === false) {
-		          //remove previous character
-		          returnStr = returnStr.slice(0, -1);
-		        } else {
-                 
-	               returnStr += res;
-	           }
+            //   returnStr += this._replaceChars[curChar](date, options);
+              var res = this._replaceChars[curChar](date, options);
+              if (res === '00' && options.alwaysDisplayTimeMinutes === false) 
+              {
+                 //remove previous character
+                 returnStr = returnStr.slice(0, -1);
+              }
+              else 
+              {
+                    returnStr += res;    
+              }
             } else {
                returnStr += curChar;
             }
          }
-
          return returnStr;
       },
 
@@ -1420,13 +1932,391 @@
          U: function(date) {
             return date.getTime() / 1000;
          }
+      },
+      
+      /* USER MANAGEMENT FUNCTIONS */
+
+      getUserForId: function(id, user)
+      {
+        $.extend(user, this.options.users[this._getUserIndexFromId(id)]);
+      },
+
+      /**
+       * return the user name for header
+       */
+      _getUserName: function(index){
+         var self = this;
+         var options = this.options;
+         var user = options.users[index];
+         if($.isFunction(options.getUserName))
+         {
+          return options.getUserName(user, index, self.element);
+         }
+         else
+         {
+          return user;
+         }
+      },
+      /**
+       * return the user id for given index
+       */
+      _getUserIdFromIndex: function(index){
+         var self = this;
+         var options = this.options;
+         if($.isFunction(options.getUserId))
+         {
+          return options.getUserId(options.users[index], index, self.element);
+         }
+         return index;
+      },
+      /**
+       * returns the associated user index for given ID
+       */
+      _getUserIndexFromId: function(id){
+         var self = this;
+         var options = this.options;
+         for(var i = 0; i < options.users.length; i++)
+         {
+           if(self._getUserIdFromIndex(i) == id)
+           {
+             return i;
+           }
+         }
+         return 0;
+      },
+      /**
+       * return the user ids for given calEvent.
+       * default is calEvent.userId field.
+       */
+      _getEventUserId: function(calEvent){
+         var self = this;
+         var options = this.options;
+          if($.isFunction(options.getEventUserId))
+          {
+            return options.getEventUserId(calEvent, self.element);
+          }
+        return calEvent.userId;
+      },
+      /**
+       * sets the event user id on given calEvent
+       * default is calEvent.userId field.
+       */
+      _setEventUserId: function(calEvent, userId){
+         var self = this;
+         var options = this.options;
+          if($.isFunction(options.setEventUserId))
+          {
+            return options.setEventUserId(userId, calEvent, self.element);
+          }
+          calEvent.userId = userId;
+          return calEvent;
+      },
+      /**
+       * return the user ids for given freeBusy.
+       * default is freeBusy.userId field.
+       */
+      _getFreeBusyUserId: function(freeBusy){
+        var self = this,
+            options = this.options,
+            ret;
+        if($.isFunction(options.getFreeBusyUserId))
+        {
+          return options.getFreeBusyUserId(freeBusy.getOption(), self.element);
+        }
+        return freeBusy.getOption('userId');
+      },
+
+      /* FREEBUSY MANAGEMENT */
+
+      /**
+       * ckean the free busy managers and remove all the freeBusy
+       */
+      _clearFreeBusys: function()
+      {
+        if(this.options.displayFreeBusys)
+        {
+          var self = this,
+              options = this.options,
+              $freeBusyPlaceholders = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy');
+          $freeBusyPlaceholders.each(function(){
+            $(this).data('wcFreeBusyManager', new FreeBusyManager({
+               start: self._cloneDate($(this).data("startDate")),
+               end: self._cloneDate($(this).data("endDate")),
+               defaultFreeBusy: options.defaultFreeBusy || {}
+            }));
+          });
+          self.element.find('.wc-grid-row-freebusy .wc-freebusy').remove();
+        }
+      },
+      /**
+       * retrieve placeholders for given freebusy
+       */
+      _findWeekDaysForFreeBusy: function(freeBusy, $weekDays){
+        var $returnWeekDays,
+            options = this.options,
+            showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+            self = this,
+            userList = self._getFreeBusyUserId(freeBusy);
+        if(!$.isArray(userList))
+        {
+          userList = userList != 'undefined' ? [userList] : [];
+        }
+        if(!$weekDays)
+        {
+          $weekDays = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy');
+        }
+        $weekDays.each(function(){
+          var manager = $(this).data('wcFreeBusyManager'),
+              has_overlap =  manager.isWithin(freeBusy.getStart())
+                          || manager.isWithin(freeBusy.getEnd())
+                          || freeBusy.isWithin(manager.getStart())
+                          || freeBusy.isWithin(manager.getEnd()),
+              userId = $(this).data('wcUserId');
+          if(has_overlap && (!showAsSeparatedUser || ($.inArray(userId, userList)!=-1) ))
+          {
+            $returnWeekDays = $returnWeekDays ? $returnWeekDays.add($(this)) : $(this);
+          }
+        });
+        return $returnWeekDays;
+      },
+
+      /**
+       * used to render all freeBusys
+       */
+      _renderFreeBusys: function(freeBusys)
+      {
+        if(this.options.displayFreeBusys)
+        {
+          var self = this,
+              options = this.options,
+              $freeBusyPlaceholders = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy'),
+              freebusysToRender;
+          //insert freebusys to dedicated placeholders freebusy managers 
+          if ($.isArray(freeBusys)) {
+            freebusysToRender = self._cleanFreeBusys(freeBusys);
+          } else if (freeBusys.freebusys) {
+            freebusysToRender = self._cleanFreeBusys(freeBusys.freebusys);
+          }
+          else
+          {
+            freebusysToRender = [];
+          }
+
+          $.each(freebusysToRender, function(index, freebusy)
+            {
+              var $placeholders = self._findWeekDaysForFreeBusy(freebusy, $freeBusyPlaceholders);
+              if($placeholders)
+              {
+                $placeholders.each(function(){
+                  var manager = $(this).data('wcFreeBusyManager');
+                  manager.insertFreeBusy(new FreeBusy(freebusy.getOption()));
+                  $(this).data('wcFreeBusyManager', manager);
+                });
+              }
+              else if(window.console && window.console.log)
+              {
+                console.error('no place holders found for freebusy: ');
+                console.log(freebusy)
+              }
+            });
+
+          //now display freebusys on  place holders
+          self._refreshFreeBusys($freeBusyPlaceholders);
+        }
+      },
+      /**
+       * refresh freebusys for given placeholders
+       */
+      _refreshFreeBusys: function($freeBusyPlaceholders)
+      {
+        if(this.options.displayFreeBusys && $freeBusyPlaceholders)
+        {
+          var self = this,
+              options = this.options,
+              start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
+              end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 );
+
+          $freeBusyPlaceholders.each(function()
+            {
+              var $placehoder = $(this);
+              var s = self._cloneDate($placehoder.data('startDate')),
+                  e = self._cloneDate(s);
+              s.setHours(start);
+              e.setHours(end);
+              $placehoder.find('.wc-freebusy').remove();
+              $.each($placehoder.data('wcFreeBusyManager').getFreeBusys(s, e), function()
+                {
+                  self._renderFreeBusy(this, $placehoder);
+                });
+            });
+        }
+      },
+      /**
+       * render a freebusy item on dedicated placeholders
+       */
+      _renderFreeBusy: function(freeBusy, $freeBusyPlaceholder)
+      {
+        if(this.options.displayFreeBusys)
+        {
+          var self = this,
+              options = this.options,
+              freeBusyHtml = '<div class="wc-freebusy"></div>';
+
+          var $fb = $(freeBusyHtml);
+          $fb.data('wcFreeBusy', new FreeBusy(freeBusy.getOption()));
+          this._positionFreeBusy($freeBusyPlaceholder, $fb);
+          $fb = options.freeBusyRender(freeBusy.getOption(),$fb, self.element);
+          if($fb)
+          {
+            $fb.appendTo($freeBusyPlaceholder);
+          }
+        }
+      },
+      /*
+       * Position the freebusy element within the weekday based on it's start / end dates.
+       */
+      _positionFreeBusy : function($placeholder, $freeBusy) {
+         var options = this.options;
+         var freeBusy = $freeBusy.data("wcFreeBusy");
+         var pxPerMillis = $placeholder.height() / options.millisToDisplay;
+         var firstHourDisplayed = options.businessHours.limitDisplay ? options.businessHours.start : 0;
+         var startMillis = freeBusy.getStart().getTime() - new Date(freeBusy.getStart().getFullYear(), freeBusy.getStart().getMonth(), freeBusy.getStart().getDate(), firstHourDisplayed).getTime();
+         var eventMillis = freeBusy.getEnd().getTime() - freeBusy.getStart().getTime();
+         var pxTop = pxPerMillis * startMillis;
+         var pxHeight = pxPerMillis * eventMillis;
+         $freeBusy.css({top: pxTop, height: pxHeight});
+      },
+      /*
+       * Clean freebusys to ensure correct format
+       */
+      _cleanFreeBusys : function(freebusys) {
+         var self = this,
+              freeBusyToReturn = [];
+         if(!$.isArray(freebusys))
+         {
+           var freebusys = [freebusys];
+         }
+         $.each(freebusys, function(i, freebusy) {
+            freeBusyToReturn.push(new FreeBusy(self._cleanFreeBusy(freebusy)));
+         });
+         return freeBusyToReturn;
+      },
+
+      /*
+       * Clean specific freebusy
+       */
+      _cleanFreeBusy : function (freebusy) {
+         if (freebusy.date) {
+            freebusy.start = freebusy.date;
+         }
+         freebusy.start = this._cleanDate(freebusy.start);
+         freebusy.end = this._cleanDate(freebusy.end);
+         return freebusy;
+      },
+
+      /**
+       * retrives the first freebusy manager matching demand.
+       */
+      getFreeBusyManagersFor: function(date, users)
+      {
+        var calEvent = {
+          start: date,
+          end: date
+        };
+        this._setEventUserId(calEvent, users);
+        return this.getFreeBusyManagerForEvent(calEvent);
+      },
+      /**
+       * retrives the first freebusy manager for given event.
+       */
+      getFreeBusyManagerForEvent: function(newCalEvent)
+      {
+        var self = this,
+            options=this.options,
+            freeBusyManager;
+        if(options.displayFreeBusys)
+        {
+          var $freeBusyPlaceHoders = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy'),
+              freeBusy = new FreeBusy({start: newCalEvent.start, end: newCalEvent.end}),
+              showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
+              userId = showAsSeparatedUser ? self._getEventUserId(newCalEvent) : null;
+          if(!$.isArray(userId))
+          {
+            userId = [userId];
+          }
+          $freeBusyPlaceHoders.each(function(){
+            var manager = $(this).data('wcFreeBusyManager'),
+                has_overlap =  manager.isWithin(freeBusy.getEnd())
+                            || manager.isWithin(freeBusy.getEnd())
+                            || freeBusy.isWithin(manager.getStart())
+                            || freeBusy.isWithin(manager.getEnd());
+            if(has_overlap && (!showAsSeparatedUser || $.inArray($(this).data('wcUserId'), userId)!=-1 ))
+            {
+              freeBusyManager = $(this).data('wcFreeBusyManager');
+              return false;
+            }
+          });
+        }
+        return freeBusyManager;
+      },
+      /**
+       * appends the freebusys to replace the old ones.
+       * @parameter {array|object} freeBusys freebusy(s) to apply
+       */
+      updateFreeBusy: function(freeBusys)
+      {
+        var self = this,
+            options=this.options;
+        if(options.displayFreeBusys)
+        {
+          var $toRender,
+              $freeBusyPlaceHoders = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy'),
+              _freeBusys = self._cleanFreeBusys(freeBusys);
+          $.each(_freeBusys, function(index, _freeBusy){
+            var $weekdays = self._findWeekDaysForFreeBusy(_freeBusy, $freeBusyPlaceHoders);
+            $weekdays.each(function(index, day){
+              var manager = $(day).data('wcFreeBusyManager');
+              manager.insertFreeBusy(_freeBusy);
+              $(day).data('wcFreeBusyManager', manager);
+            });
+            $toRender = $toRender ? $toRender.add($weekdays) : $weekdays;
+          });
+          self._refreshFreeBusys($toRender);
+        }
+      },
+
+      /* NEW OPTIONS MANAGEMENT */
+
+      /**
+       * checks wether or not the calendar should be displayed starting on first day of week
+       */
+      _startOnFirstDayOfWeek: function()
+      {
+        return jQuery.isFunction(this.options.startOnFirstDayOfWeek) ? this.options.startOnFirstDayOfWeek(this.element) : this.options.startOnFirstDayOfWeek;
+      },
+
+      /**
+       * finds out the current scroll to apply it when changing the view
+       */
+      _getCurrentScrollHour: function(){
+         var self = this;
+         var options = this.options;
+         var $scrollable = this.element.find(".wc-scrollable-grid");
+         var scroll = $scrollable.scrollTop();
+         if (self.options.businessHours.limitDisplay) {
+           scroll = scroll + options.businessHours.start * options.timeslotHeight * options.timeslotsPerHour;
+         }
+         return Math.round(scroll / (options.timeslotHeight * options.timeslotsPerHour)) + 1;
       }
+
+
+      
+
 
    });
 
    $.extend($.ui.weekCalendar, {
-      version: '1.2.2-pre',
-
+      version: '1.2.2-pre'
    });
 
    var MILLIS_IN_DAY = 86400000;
@@ -1474,5 +2364,296 @@
       };
    }();
 
+    /* FREE BUSY MANAGERS */
+    var FreeBusyProto = {
+      getStart: function(){return this.getOption('start')},
+      getEnd: function(){return this.getOption('end')},
+      getOption: function(){
+          if(!arguments.length){ return this.options };
+          if(typeof(this.options[arguments[0]]) !== 'undefined')
+          {
+            return this.options[arguments[0]];
+          }
+          else if(typeof(arguments[1]) !== 'undefined')
+          {
+            return arguments[1];
+          }
+          return null;
+        },
+      setOption: function(key, value){
+          if(arguments.length == 1)
+          {
+            $.extend(this.options, arguments[0]);
+            return this;
+          }
+          this.options[key] = value;
+          return this;
+        },
+      isWithin: function(dateTime){return Math.floor(dateTime.getTime() / 1000)>=Math.floor(this.getStart().getTime() / 1000) && Math.floor(dateTime.getTime()/1000)<=Math.floor(this.getEnd().getTime()/1000)},
+      isValid: function(){return this.getStart().getTime() < this.getEnd().getTime()}
+    };
+
+    /**
+     * @constructor
+     * single user freebusy manager.
+     */
+    var FreeBusy = function(options){
+      this.options = $.extend({}, options || {});
+    };
+    $.extend(FreeBusy.prototype, FreeBusyProto);
+
+    var FreeBusyManager = function(options){
+      this.options = $.extend({
+          defaultFreeBusy: {}
+        }, options || {});
+      this.freeBusys = [];
+      this.freeBusys.push(new FreeBusy($.extend({
+            start: this.getStart(),
+            end: this.getEnd()
+          }, this.options.defaultFreeBusy)));
+    };
+    $.extend(FreeBusyManager.prototype, FreeBusyProto, {
+      /**
+       * return matching freeBusys.
+       * if you do not pass any argument, returns all freebusys.
+       * if you only pass a start date, only matchinf freebusy will be returned.
+       * if you pass 2 arguments, then all freebusys available within the time period will be returned
+       * @param {Date} start [optionnal] if you do not pass end date, will return the freeBusy within which this date falls.
+       * @param {Date} end [optionnal] the date where to stop the search
+       * @return {Array}
+       */
+      getFreeBusys: function (){
+          switch(arguments.length)
+          {
+            case 0:
+              return this.freeBusys;
+            case 1:
+              var freeBusy = [];
+              var start = arguments[0];
+              if(!this.isWithin(start))
+              {
+                return freeBusy;
+              }
+              $.each(this.freeBusys, function(){
+                if(this.isWithin(start))
+                {
+                  freeBusy.push(this);
+                }
+                if(Math.floor(this.getEnd().getTime() / 1000) > Math.floor(start.getTime() / 1000))
+                {
+                  return false;
+                }
+              });
+              return freeBusy;
+            default:
+              //we assume only 2 first args are revealants
+              var freeBusy = [];
+              var start = arguments[0], end = arguments[1];
+              var tmpFreeBusy = new FreeBusy({start: start, end: end});
+              if(end.getTime() < start.getTime() || this.getStart().getTime() > end.getTime() || this.getEnd().getTime() < start.getTime())
+              {
+                return freeBusy;
+              }
+              $.each(this.freeBusys, function(){
+                if(this.getStart().getTime() >= end.getTime())
+                {
+                  return false;
+                }
+                if(tmpFreeBusy.isWithin(this.getStart()) && tmpFreeBusy.isWithin(this.getEnd()))
+                {
+                  freeBusy.push(this);
+                }
+                else if(this.isWithin(tmpFreeBusy.getStart()) && this.isWithin(tmpFreeBusy.getEnd()))
+                {
+                  var _f = new FreeBusy(this.getOption());
+                  _f.setOption('end', tmpFreeBusy.getEnd());
+                  _f.setOption('start', tmpFreeBusy.getStart());
+                  freeBusy.push(_f);
+                }
+                else if(this.isWithin(tmpFreeBusy.getStart()) && this.getStart().getTime() < start.getTime())
+                {
+                  var _f = new FreeBusy(this.getOption());
+                  _f.setOption('start', tmpFreeBusy.getStart());
+                  freeBusy.push(_f);
+                }
+                else if(this.isWithin(tmpFreeBusy.getEnd()) && this.getEnd().getTime() > end.getTime())
+                {
+                  var _f = new FreeBusy(this.getOption());
+                  _f.setOption('end', tmpFreeBusy.getEnd());
+                  freeBusy.push(_f);
+                }
+              });
+              return freeBusy;
+          }
+        },
+      insertFreeBusy: function(freeBusy){
+          var freeBusy = new FreeBusy(freeBusy.getOption());
+          //first, if inserted freebusy is bigger than manager
+          if(freeBusy.getStart().getTime() < this.getStart().getTime())
+          {
+            freeBusy.setOption('start', this.getStart());
+          }
+          if(freeBusy.getEnd().getTime() > this.getEnd().getTime())
+          {
+            freeBusy.setOption('end', this.getEnd());
+          }
+          var start = freeBusy.getStart(), end = freeBusy.getEnd(),
+              startIndex=0, endIndex = this.freeBusys.length - 1,
+              newFreeBusys = [];
+          var pushNewFreeBusy = function(_f){if(_f.isValid()) newFreeBusys.push(_f);}
+
+          $.each(this.freeBusys, function(index){
+            //within the loop, we have following vars:
+            // curFreeBusyItem: the current iteration freeBusy, part of manager freeBusys list
+            // start: the insterted freeBusy start
+            // end: the inserted freebusy end
+            var curFreeBusyItem = this;
+            if(curFreeBusyItem.isWithin(start) && curFreeBusyItem.isWithin(end))
+            {
+              /*
+                we are in case where inserted freebusy fits in curFreeBusyItem:
+                curFreeBusyItem:    *-----------------------------*
+                freeBusy:               *-------------*
+                obviously, start and end indexes are this item.
+              */
+              startIndex = index;
+              endIndex = index;
+              if(start.getTime() == curFreeBusyItem.getStart().getTime() && end.getTime() == curFreeBusyItem.getEnd().getTime())
+              {
+                /*
+                  in this case, inserted freebusy is exactly curFreeBusyItem:
+                  curFreeBusyItem:    *-----------------------------*
+                  freeBusy:           *-----------------------------*
+
+                  just replace curFreeBusyItem with freeBusy.
+                */
+                var _f1 = new FreeBusy(freeBusy.getOption());
+                pushNewFreeBusy(_f1);
+              }
+              else if(start.getTime() == curFreeBusyItem.getStart().getTime())
+              {
+                /*
+                  in this case inserted freebusy starts with curFreeBusyItem:
+                  curFreeBusyItem:    *-----------------------------*
+                  freeBusy:           *--------------*
+
+                  just replace curFreeBusyItem with freeBusy AND the rest.
+                */
+                var _f1 = new FreeBusy(freeBusy.getOption());
+                var _f2 = new FreeBusy(curFreeBusyItem.getOption());
+                _f2.setOption('start', end);
+                pushNewFreeBusy(_f1);
+                pushNewFreeBusy(_f2);
+              }
+              else if(end.getTime() == curFreeBusyItem.getEnd().getTime())
+              {
+                /*
+                  in this case inserted freebusy ends with curFreeBusyItem:
+                  curFreeBusyItem:    *-----------------------------*
+                  freeBusy:                          *--------------*
+
+                  just replace curFreeBusyItem with before part AND freeBusy.
+                */
+                var _f1 = new FreeBusy(curFreeBusyItem.getOption());
+                _f1.setOption('end', start);
+                var _f2 = new FreeBusy(freeBusy.getOption());
+                pushNewFreeBusy(_f1);
+                pushNewFreeBusy(_f2);
+              }
+              else
+              {
+                /*
+                  in this case inserted freebusy is within curFreeBusyItem:
+                  curFreeBusyItem:    *-----------------------------*
+                  freeBusy:                   *--------------*
+
+                  just replace curFreeBusyItem with before part AND freeBusy AND the rest.
+                */
+                var _f1 = new FreeBusy(curFreeBusyItem.getOption());
+                var _f2 = new FreeBusy(freeBusy.getOption());
+                var _f3 = new FreeBusy(curFreeBusyItem.getOption());
+                _f1.setOption('end', start);
+                _f3.setOption('start', end);
+                pushNewFreeBusy(_f1);
+                pushNewFreeBusy(_f2);
+                pushNewFreeBusy(_f3);
+              }
+              /*
+                as work is done, no need to go further.
+                return false
+              */
+              return false;
+            }
+            else if(curFreeBusyItem.isWithin(start) && curFreeBusyItem.getEnd().getTime() != start.getTime())
+            {
+              /*
+                in this case, inserted freebusy starts within curFreeBusyItem:
+                curFreeBusyItem:    *----------*
+                freeBusy:               *-------------------*
+
+                set start index AND insert before part, we'll insert freebusy later
+              */
+              if(curFreeBusyItem.getStart().getTime()!=start.getTime())
+              {
+                var _f1 = new FreeBusy(curFreeBusyItem.getOption());
+                _f1.setOption('end', start);
+                pushNewFreeBusy(_f1);
+              }
+              startIndex = index;
+            }
+            else if(curFreeBusyItem.isWithin(end) && curFreeBusyItem.getStart().getTime() != end.getTime())
+            {
+              /*
+                in this case, inserted freebusy starts within curFreeBusyItem:
+                curFreeBusyItem:                 *----------*
+                freeBusy:           *-------------------*
+
+                set end index AND insert freebusy AND insert after part if needed
+              */
+              pushNewFreeBusy(new FreeBusy(freeBusy.getOption()));
+              if(end.getTime() < curFreeBusyItem.getEnd().getTime())
+              {
+                var _f1 = new FreeBusy(curFreeBusyItem.getOption());
+                _f1.setOption('start',end);
+                pushNewFreeBusy(_f1);
+              }
+              endIndex = index;
+              return false;
+            }
+          });
+          //now compute arguments
+          var tmpFB = this.freeBusys;
+          this.freeBusys = [];
+
+          if(startIndex)
+          {
+            this.freeBusys = this.freeBusys.concat(tmpFB.slice(0,startIndex));
+          }
+          this.freeBusys = this.freeBusys.concat(newFreeBusys);
+          if(endIndex < tmpFB.length)
+          {
+            this.freeBusys = this.freeBusys.concat(tmpFB.slice(endIndex + 1));
+          }
+/*          if(start.getDate() == 1)
+          {
+          console.info('insert from '+freeBusy.getStart() +' to '+freeBusy.getEnd());
+            console.log('index from '+ startIndex + ' to ' + endIndex);
+            var str = [];
+            $.each(tmpFB, function(i){str.push(i + ": " + this.getStart().getHours() + ' > ' + this.getEnd().getHours() + ' ' + (this.getOption('free') ? 'free' : 'busy'))});
+            console.log(str.join('\n'));
+
+            console.log('insert');
+            var str = [];
+            $.each(newFreeBusys, function(i){str.push(this.getStart().getHours() + ' > ' + this.getEnd().getHours())});
+            console.log(str.join(', '));
+
+            console.log('results');
+            var str = [];
+            $.each(this.freeBusys, function(i){str.push(i + ": " + this.getStart().getHours() + ' > ' + this.getEnd().getHours()  + ' ' + (this.getOption('free') ? 'free' :'busy'))});
+            console.log(str.join('\n'));
+          }*/
+          return this;
+        }
+    });
 
 })(jQuery);
