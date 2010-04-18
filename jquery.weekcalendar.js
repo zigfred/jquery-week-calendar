@@ -131,7 +131,7 @@
           * should the calendar display freebusys ?
           * @type {boolean}
           */
-         displayFreeBusys: true,
+         displayFreeBusys: false,
          /**
           * read the id(s) for who the freebusy is available
           * @param {Object} calEvent the calEvent to read informations from
@@ -173,7 +173,7 @@
           * should the columns be rendered alternatively using odd/even class
           * @type {boolean}
           */
-         displayOddEven: true,
+         displayOddEven: false,
          textSize: 13
       },
 
@@ -566,7 +566,7 @@
       {
         var self = this, options = this.options,
             showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
-            rowspan="", calendarHeaderHtml;
+            rowspan="", colspan, calendarHeaderHtml;
 
         if(showAsSeparatedUser)
         {
@@ -736,7 +736,7 @@
             {
               if(!showAsSeparatedUser)
               {
-                oddEven = ( oddEven == "even" ? 'odd' : 'even' );
+                oddEven = ( oddEven == "odd" ? 'even' : 'odd' );
                 renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
                 renderRow+=   "<div class=\"wc-no-height-wrapper wc-oddeven-wrapper\">";
                 renderRow+=     "<div class=\"wc-full-height-column wc-column-" + oddEven + "\"></div>";
