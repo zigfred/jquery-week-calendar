@@ -1073,7 +1073,7 @@
               }
             });
          }
-         self._clearFreeBusys();
+         //self._clearFreeBusys();
       },
 
       /*
@@ -1081,7 +1081,6 @@
        */
       _renderEvents : function (data, $weekDayColumns) {
 
-         this._clearCalendar();
 
          var self = this;
          var options = this.options;
@@ -1109,6 +1108,7 @@
             }
 
          }
+         this._clearCalendar();
 
 
          if ($.isArray(data)) {
