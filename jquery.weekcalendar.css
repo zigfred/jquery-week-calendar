@@ -29,6 +29,7 @@
 	border-top: 1px solid #aaa;
 	border-bottom: 1px solid #aaa;
 	width: 100%;
+  table-layout:fixed;
 }
 
 .wc-header .wc-time-column-header {
