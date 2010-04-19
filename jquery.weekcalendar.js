@@ -203,7 +203,6 @@
        * Refresh the events for the currently displayed week.
        */
       refresh : function() {
-         this._clearCalendar();
          this._loadCalEvents(this.element.data("startDate")); //reload with existing week
       },
 
