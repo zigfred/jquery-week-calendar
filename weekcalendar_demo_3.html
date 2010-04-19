@@ -143,7 +143,10 @@
 			eventNew : function(calEvent, $event, FreeBusyManager, calendar) {
         var isFree = true;
         $.each(FreeBusyManager.getFreeBusys(calEvent.start, calEvent.end), function(){
-                                                  if(!this.getOption('free'))
+                                                  if(
+                                                        this.getStart().getTime() != calEvent.end.getTime()
+                                                    &&  this.getEnd().getTime() != calEvent.start.getTime()
+                                                    &&  !this.getOption('free'))
                                                   {
                                                     isFree = false; return false;
                                                   }
