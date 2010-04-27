@@ -25,7 +25,17 @@
          alwaysDisplayTimeMinutes: true,
          use24Hour : false,
          daysToShow : 7,
-         firstDayOfWeek : 0, // 0 = Sunday, 1 = Monday, 2 = Tuesday, ... , 6 = Saturday
+         firstDayOfWeek : function(calendar){
+                      if($(calendar).weekCalendar('option', 'daysToShow') != 5)
+                      {
+                        return 0;
+                      }
+                      else
+                      {
+                        //workweek
+                        return 1;
+                      }
+                  }, // 0 = Sunday, 1 = Monday, 2 = Tuesday, ... , 6 = Saturday
          useShortDayNames: false,
          timeSeparator : " to ",
          startParam : "start",
@@ -38,9 +48,10 @@
          buttons : true,
          buttonText : {
             today : "today",
-            lastWeek : "&nbsp;&lt;&nbsp;",
-            nextWeek : "&nbsp;&gt;&nbsp;"
+            lastWeek : "previous",
+            nextWeek : "next"
          },
+         switchDisplay: {'1 day': 1, '3 next days': 3, 'work week': 5, 'full week': 7},
          scrollToHourMillis : 500,
          allowCalEventOverlap : false,
          overlapEventsSeparate: false,
@@ -373,6 +384,28 @@
         }); 
         return calEvents;
       },
+
+      next: function(){
+        if(this._startOnFirstDayOfWeek())
+        {
+          return this.nextWeek();
+        }
+        var newDate = new Date(this.element.data("startDate").getTime());
+        newDate.setDate(newDate.getDate() + this.options.daysToShow);
+        this._clearCalendar();
+        this._loadCalEvents(newDate);
+      },
+
+      prev: function(){
+        if(this._startOnFirstDayOfWeek())
+        {
+          return this.prevWeek();
+        }
+        var newDate = new Date(this.element.data("startDate").getTime());
+        newDate.setDate(newDate.getDate() - this.options.daysToShow);
+        this._clearCalendar();
+        this._loadCalEvents(newDate);
+      },
 /*
       getData : function(key) {
          return this._getData(key);
@@ -424,7 +457,7 @@
          if (options && $.isFunction(options.height)) {
             var calendarHeight = options.height(this.element);
             var headerHeight = this.element.find(".wc-header").outerHeight();
-            var navHeight = this.element.find(".wc-nav").outerHeight();
+            var navHeight = this.element.find(".wc-toolbar").outerHeight();
             this.element.find(".wc-scrollable-grid").height(calendarHeight - navHeight - headerHeight);
          }
       },
@@ -515,46 +548,69 @@
       {
         var self = this, options = this.options;
         if (options.buttons) {
-           var calendarNavHtml = "<div class=\"wc-nav\">\
-                   <button class=\"wc-today\">" + options.buttonText.today + "</button>\
-                   <button class=\"wc-prev\">" + options.buttonText.lastWeek + "</button>\
-                   <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
-                   </div>";
+           var calendarNavHtml = "\
+                <div class=\"wc-toolbar\">\
+                  <div class=\"wc-display\">\
+                  </div>\
+                  <div class=\"wc-nav\">\
+                    <button class=\"wc-prev\">" + options.buttonText.lastWeek + "</button>\
+                    <button class=\"wc-today\">" + options.buttonText.today + "</button>\
+                    <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
+                  </div>\
+                </div>";
 
            $(calendarNavHtml).appendTo($calendarContainer);
 
-           $calendarContainer.find(".wc-nav .wc-today").click(function() {
-              self.element.weekCalendar("today");
-              return false;
-           });
+           $calendarContainer.find(".wc-nav .wc-today")
+              .button({
+                icons:{primary: 'ui-icon-home'}})
+              .click(function() {
+                    self.today();
+                    return false;
+                 });
 
-           $calendarContainer.find(".wc-nav .wc-prev").click(function() {
-              if(self._startOnFirstDayOfWeek())
-              {
-                self.element.weekCalendar("prevWeek");
-              }
-              else
-              {
-                var newDate = new Date(self.element.data("startDate").getTime());
-                newDate.setDate(newDate.getDate() - self.options.daysToShow)
-                self.element.weekCalendar("gotoDate", newDate);
-              }
-              return false;
-           });
+           $calendarContainer.find(".wc-nav .wc-prev")
+              .button({
+                text: false,
+                icons: {primary: 'ui-icon-seek-prev'}})
+              .click(function() {
+                  self.element.weekCalendar('prev');
+                  return false;
+               });
 
-           $calendarContainer.find(".wc-nav .wc-next").click(function() {
-              if(self._startOnFirstDayOfWeek())
-              {
-                self.element.weekCalendar("nextWeek");
-              }
-              else
-              {
-                var newDate = new Date(self.element.data("startDate").getTime());
-                newDate.setDate(newDate.getDate() + self.options.daysToShow)
-                self.element.weekCalendar("gotoDate", newDate);
-              }
-              return false;
-           });
+           $calendarContainer.find(".wc-nav .wc-next")
+              .button({
+                text: false,
+                icons: {primary: 'ui-icon-seek-next'}})
+              .click(function() {
+                  self.element.weekCalendar('next');
+                  return false;
+               });
+
+           // now add buttons to switch display
+           if(this.options.switchDisplay && $.isPlainObject(this.options.switchDisplay))
+           {
+             var $container = $calendarContainer.find(".wc-display");
+             $.each(this.options.switchDisplay, function(label, option)
+                    {
+                      var _id = 'wc-switch-display-'+option;
+                      var _input = $('<input type="radio" id="'+_id+'" name="wc-switch-display" class="wc-switch-display"/>');
+                      var _label = $('<label for="'+_id+'"></label>');
+                      _label.html(label);
+                      _input.val(option);
+                      if(parseInt(self.options.daysToShow, 10) === parseInt(option, 10))
+                      {
+                        _input.attr('checked', 'checked');
+                      }
+                      $container
+                        .append(_input)
+                        .append(_label);
+                    });
+             $container.find('input').change(function(){
+                  self.setDaysToShow(parseInt($(this).val(), 10));
+                })
+           }
+           $calendarContainer.find(".wc-nav, .wc-display").buttonset();
         }
       },
 
@@ -1025,7 +1081,7 @@
       _updateDayColumnHeader : function ($weekDayColumns) {
          var self = this;
          var options = this.options;
-         var currentDay = self._cloneDate(self.element.data("startDate"));
+         var currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
          var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
 
          self.element.find(".wc-header td.wc-day-column-header").each(function(i, val) {
@@ -1726,8 +1782,16 @@
          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
          var currentDayOfStandardWeek = midnightCurrentDate.getDay();
          var days = [0,1,2,3,4,5,6];
-         this._rotate(days, this.options.firstDayOfWeek);
+         this._rotate(days, this._firstDayOfWeek());
          return days[currentDayOfStandardWeek];
+      },
+
+      _firstDayOfWeek : function(){
+        if($.isFunction(this.options.firstDayOfWeek))
+        {
+          return this.options.firstDayOfWeek(this.element);
+        }
+        return this.options.firstDayOfWeek;
       },
 
       /*
@@ -2111,11 +2175,6 @@
                   manager.insertFreeBusy(new FreeBusy(freebusy.getOption()));
                   $(this).data('wcFreeBusyManager', manager);
                 });
-              }
-              else if(window.console && window.console.log)
-              {
-                console.error('no place holders found for freebusy: ');
-                console.log(freebusy)
               }
             });
 
