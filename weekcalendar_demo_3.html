@@ -18,7 +18,7 @@
 		font-size: 0.8em;
 		padding: 1em;
 		position: absolute;
-		top: 3.2em;
+		top: 1.2em;
 		margin-right: 400px;
 	}
 	
@@ -169,13 +169,14 @@
 				} else if(dataSource === "2") {
 					callback(eventData2);
 				} else {
-					callback({options: {daysToShow: 7, defaultFreeBusy:{free:true}}, events: []});
+					callback({options: {defaultFreeBusy:{free:true}}, events: []});
 				}
             },
       users:['user 1', 'user 2', 'user 3', "user 4"],
       showAsSeparateUser: true,
       displayOddEven: true,
-      displayFreeBusys: true
+      displayFreeBusys: true,
+      daysToShow: 7
 		});
 
 		$("#data_source").change(function() {

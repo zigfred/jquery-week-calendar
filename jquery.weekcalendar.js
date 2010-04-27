@@ -373,6 +373,28 @@
         }); 
         return calEvents;
       },
+
+      next: function(){
+        if(this._startOnFirstDayOfWeek())
+        {
+          return this.nextWeek();
+        }
+        var newDate = new Date(this.element.data("startDate").getTime());
+        newDate.setDate(newDate.getDate() + this.options.daysToShow);
+        this._clearCalendar();
+        this._loadCalEvents(newDate);
+      },
+
+      prev: function(){
+        if(this._startOnFirstDayOfWeek())
+        {
+          return this.prevWeek();
+        }
+        var newDate = new Date(this.element.data("startDate").getTime());
+        newDate.setDate(newDate.getDate() - this.options.daysToShow);
+        this._clearCalendar();
+        this._loadCalEvents(newDate);
+      },
 /*
       getData : function(key) {
          return this._getData(key);
@@ -424,7 +446,7 @@
          if (options && $.isFunction(options.height)) {
             var calendarHeight = options.height(this.element);
             var headerHeight = this.element.find(".wc-header").outerHeight();
-            var navHeight = this.element.find(".wc-nav").outerHeight();
+            var navHeight = this.element.find(".wc-toolbar").outerHeight();
             this.element.find(".wc-scrollable-grid").height(calendarHeight - navHeight - headerHeight);
          }
       },
@@ -515,46 +537,43 @@
       {
         var self = this, options = this.options;
         if (options.buttons) {
-           var calendarNavHtml = "<div class=\"wc-nav\">\
-                   <button class=\"wc-today\">" + options.buttonText.today + "</button>\
-                   <button class=\"wc-prev\">" + options.buttonText.lastWeek + "</button>\
-                   <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
-                   </div>";
+           var calendarNavHtml = "\
+                <div class=\"wc-toolbar\">\
+                  <div class=\"wc-nav\">\
+                    <button class=\"wc-prev\">" + options.buttonText.lastWeek + "</button>\
+                    <button class=\"wc-today\">" + options.buttonText.today + "</button>\
+                    <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
+                  </div>\
+                </div>";
 
            $(calendarNavHtml).appendTo($calendarContainer);
 
-           $calendarContainer.find(".wc-nav .wc-today").click(function() {
-              self.element.weekCalendar("today");
-              return false;
-           });
+           $calendarContainer.find(".wc-nav .wc-today")
+              .button({
+                icons:{primary: 'ui-icon-home'}})
+              .click(function() {
+                    self.today();
+                    return false;
+                 });
 
-           $calendarContainer.find(".wc-nav .wc-prev").click(function() {
-              if(self._startOnFirstDayOfWeek())
-              {
-                self.element.weekCalendar("prevWeek");
-              }
-              else
-              {
-                var newDate = new Date(self.element.data("startDate").getTime());
-                newDate.setDate(newDate.getDate() - self.options.daysToShow)
-                self.element.weekCalendar("gotoDate", newDate);
-              }
-              return false;
-           });
+           $calendarContainer.find(".wc-nav .wc-prev")
+              .button({
+                text: false,
+                icons: {primary: 'ui-icon-seek-prev'}})
+              .click(function() {
+                  self.element.weekCalendar('prev');
+                  return false;
+               });
 
-           $calendarContainer.find(".wc-nav .wc-next").click(function() {
-              if(self._startOnFirstDayOfWeek())
-              {
-                self.element.weekCalendar("nextWeek");
-              }
-              else
-              {
-                var newDate = new Date(self.element.data("startDate").getTime());
-                newDate.setDate(newDate.getDate() + self.options.daysToShow)
-                self.element.weekCalendar("gotoDate", newDate);
-              }
-              return false;
-           });
+           $calendarContainer.find(".wc-nav .wc-next")
+              .button({
+                text: false,
+                icons: {primary: 'ui-icon-seek-next'}})
+              .click(function() {
+                  self.element.weekCalendar('next');
+                  return false;
+               });
+           $calendarContainer.find(".wc-nav").buttonset();
         }
       },
 
@@ -1025,7 +1044,7 @@
       _updateDayColumnHeader : function ($weekDayColumns) {
          var self = this;
          var options = this.options;
-         var currentDay = self._cloneDate(self.element.data("startDate"));
+         var currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
          var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
 
          self.element.find(".wc-header td.wc-day-column-header").each(function(i, val) {
@@ -2111,11 +2130,6 @@
                   manager.insertFreeBusy(new FreeBusy(freebusy.getOption()));
                   $(this).data('wcFreeBusyManager', manager);
                 });
-              }
-              else if(window.console && window.console.log)
-              {
-                console.error('no place holders found for freebusy: ');
-                console.log(freebusy)
               }
             });
 
