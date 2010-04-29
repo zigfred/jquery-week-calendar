@@ -12,11 +12,16 @@
 
 .wc-toolbar .wc-nav
 {
-  
+  float:left;
 }
 
 .wc-toolbar .wc-display{
   float: right;
+}
+.wc-toolbar .wc-title{
+  text-align:center;
+  padding:0;
+  margin:0;
 }
 
 .wc-container table {
