@@ -185,7 +185,14 @@
           * @type {boolean}
           */
          displayOddEven: false,
-         textSize: 13
+         textSize: 13,
+         /**
+          * the title attribute for the calendar. possible placeholders are:
+          *  - %start%
+          *  - %end%
+          *  - %date%
+          */
+         title: '%start% - %end%'
       },
 
       /***********************
@@ -557,6 +564,8 @@
                     <button class=\"wc-today\">" + options.buttonText.today + "</button>\
                     <button class=\"wc-next\">" + options.buttonText.nextWeek + "</button>\
                   </div>\
+                  <h1 class=\"wc-title\">\
+                  </h1>\
                 </div>";
 
            $(calendarNavHtml).appendTo($calendarContainer);
@@ -611,6 +620,10 @@
                 })
            }
            $calendarContainer.find(".wc-nav, .wc-display").buttonset();
+           var _title = $calendarContainer.find(".wc-title");
+           _title.height($calendarContainer.find(".wc-nav").outerHeight()
+                              - parseInt(_title.css('padding-top'), 10) 
+                              - parseInt(_title.css('padding-bottom'), 10));
         }
       },
 
@@ -1128,6 +1141,18 @@
                 currentDay = self._addDays(currentDay, 1);
               }
             });
+         }
+
+         //now update the calendar title
+         if(this.options.title && this.options.title.length){
+            var _date = this.options.date,
+                _start = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate"))),
+                _end = self._dateLastDayOfWeek(self._cloneDate(self.element.data("startDate"))),
+                _title = this.options.title;
+            _title = _title.split('%start%').join(self._formatDate(_start , options.dateFormat));
+            _title = _title.split('%end%').join(self._formatDate(_end , options.dateFormat))
+            _title = _title.split('%date%').join(self._formatDate(_date , options.dateFormat));
+            $('.wc-toolbar .wc-title', self.element).html(_title);
          }
          //self._clearFreeBusys();
       },
