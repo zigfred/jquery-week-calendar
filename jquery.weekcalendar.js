@@ -620,10 +620,10 @@
                 })
            }
            $calendarContainer.find(".wc-nav, .wc-display").buttonset();
-           var _title = $calendarContainer.find(".wc-title");
-           _title.height($calendarContainer.find(".wc-nav").outerHeight()
-                              - parseInt(_title.css('padding-top'), 10) 
-                              - parseInt(_title.css('padding-bottom'), 10));
+           var _height = $calendarContainer.find(".wc-nav").outerHeight();
+           $calendarContainer.find(".wc-title")
+              .height(_height)
+              .css('line-height', _height+'px');
         }
       },
 
