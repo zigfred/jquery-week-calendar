@@ -70,6 +70,9 @@
          eventAfterRender : function(calEvent, element) {
             return element;
          },
+         eventRefresh : function(calEvent, element) {
+            return element;
+         },
          eventDrag : function(calEvent, element) {
          },
          eventDrop : function(calEvent, element) {
@@ -88,6 +91,20 @@
          },
          noEvents : function() {
          },
+         eventHeader : function(calEvent, calendar) {
+           var options = calendar.weekCalendar('option');
+           var one_hour = 3600000;
+           var displayTitleWithTime = calEvent.end.getTime()-calEvent.start.getTime() <= (one_hour/options.timeslotsPerHour);
+           if (displayTitleWithTime){
+             return calendar.weekCalendar('formatDate', calEvent.start, options.timeFormat) + ": " + calEvent.title;
+           }
+           else {
+             return calendar.weekCalendar('formatDate', calEvent.start, options.timeFormat) + options.timeSeparator + calendar.weekCalendar('formatDate', calEvent.end, options.timeFormat);
+           }
+         },
+         eventBody : function(calEvent, calendar) {
+           return calEvent.title;
+         },
          shortMonths : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
          longMonths : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
          shortDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -100,13 +117,13 @@
           * only the events that belongs to one or several of given users
           * @type {array}
           */
-         users: [],
+         users : [],
          /**
           * should the calendar be displayed with separate column for each users.
           * note that this option does nothing if you do not provide at least one user.
           * @type {boolean}
           */
-         showAsSeparateUsers: true,
+         showAsSeparateUsers : true,
          /**
           * callback used to read user id from a user object.
           * @param {Object} user the user to retrieve the id from
@@ -114,7 +131,9 @@
           * @param {jQuery} calendar the calendar object
           * @return {int|String} the user id 
           */
-         getUserId: function(user, index, calendar){return index;},
+         getUserId : function(user, index, calendar) {
+           return index;
+         },
          /**
           * callback used to read user name from a user object.
           * @param {Object} user the user to retrieve the name from
@@ -122,39 +141,48 @@
           * @param {jQuery} calendar the calendar object
           * @return {String} the user name
           */
-         getUserName: function(user, index, calendar){return user;},
+         getUserName : function(user, index, calendar) {
+           return user;
+         },
          /**
           * reads the id(s) of user(s) for who the event should be displayed.
           * @param {Object} calEvent the calEvent to read informations from
           * @param {jQuery} calendar the calendar object
           * @return {number|String|Array} the user id(s) to appened the events for
           */
-         getEventUserId: function(calEvent, calendar){return calEvent.userId;},
+         getEventUserId : function(calEvent, calendar) {
+           return calEvent.userId;
+         },
          /**
           * sets user id(s) to the calEvent
           * @param {Object} calEvent the calEvent to set informations to
           * @param {jQuery} calendar the calendar object
           * @return {Object} the calEvent with modified user id
           */
-         setEventUserId: function(userId, calEvent, calendar){calEvent.userId = userId; return calEvent;},
+         setEventUserId : function(userId, calEvent, calendar) {
+           calEvent.userId = userId; 
+           return calEvent;
+         },
          /* freeBusy options */
          /**
           * should the calendar display freebusys ?
           * @type {boolean}
           */
-         displayFreeBusys: false,
+         displayFreeBusys : false,
          /**
           * read the id(s) for who the freebusy is available
           * @param {Object} calEvent the calEvent to read informations from
           * @param {jQuery} calendar the calendar object
           * @return {number|String|Array} the user id(s) to appened the events for
           */
-         getFreeBusyUserId: function(calFreeBusy, calendar){return calFreeBusy.userId;},
+         getFreeBusyUserId : function(calFreeBusy, calendar) {
+           return calFreeBusy.userId;
+         },
          /**
           * the default freeBusy object, used to manage default state
           * @type {Object}
           */
-         defaultFreeBusy: {free: false},
+         defaultFreeBusy : {free: false},
          /**
           * function used to display the freeBusy element
           * @type {Function}
@@ -162,7 +190,7 @@
           * @param {jQuery} $freeBusy the freeBusy HTML element
           * @param {jQuery} calendar the calendar element
           */
-         freeBusyRender: function(freeBusy, $freeBusy, calendar){
+         freeBusyRender : function(freeBusy, $freeBusy, calendar) {
             if(!freeBusy.free)
             {
               $freeBusy.addClass('free-busy-busy');
@@ -179,20 +207,22 @@
           * @param {jQuery} calendar the calendar object
           * @type {Function|bool}
           */
-         startOnFirstDayOfWeek: function(calendar){return $(calendar).weekCalendar('option', 'daysToShow') >= 5;},
+         startOnFirstDayOfWeek : function(calendar) {
+           return $(calendar).weekCalendar('option', 'daysToShow') >= 5;
+         },
          /**
           * should the columns be rendered alternatively using odd/even class
           * @type {boolean}
           */
-         displayOddEven: false,
-         textSize: 13,
+         displayOddEven : false,
+         textSize : 13,
          /**
           * the title attribute for the calendar. possible placeholders are:
           *  - %start%
           *  - %end%
           *  - %date%
           */
-         title: '%start% - %end%'
+         title : '%start% - %end%'
       },
 
       /***********************
@@ -1641,19 +1671,10 @@
        * Refresh the displayed details of a calEvent in the calendar
        */
       _refreshEventDetails : function(calEvent, $calEvent) {
-         var self = this;
-         var options = this.options;
-         //$calEvent.find(".wc-time").html(self._formatDate(calEvent.start, options.timeFormat) + options.timeSeparator + self._formatDate(calEvent.end, options.timeFormat));
-         var one_hour = 3600000;
-         var displayTitleWithTime = calEvent.end.getTime()-calEvent.start.getTime() <= (one_hour/options.timeslotsPerHour);
-         if (displayTitleWithTime){
-           $calEvent.find(".wc-time").html(self._formatDate(calEvent.start, options.timeFormat) + ": " + calEvent.title);
-         }
-         else {
-           $calEvent.find(".wc-time").html(self._formatDate(calEvent.start, options.timeFormat) + options.timeSeparator + self._formatDate(calEvent.end, options.timeFormat));
-         }
-         $calEvent.find(".wc-title").html(calEvent.title);
+         $calEvent.find(".wc-time").html(this.options.eventHeader(calEvent, this.element));
+         $calEvent.find(".wc-title").html(this.options.eventBody(calEvent, this.element));
          $calEvent.data("calEvent", calEvent);
+         this.options.eventRefresh(calEvent, $calEvent);
       },
 
       /*
