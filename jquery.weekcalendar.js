@@ -1192,7 +1192,6 @@
        */
       _renderEvents : function (data, $weekDayColumns) {
 
-
          var self = this;
          var options = this.options;
          var eventsToRender;
@@ -1220,7 +1219,6 @@
 
          }
          this._clearCalendar();
-
 
          if ($.isArray(data)) {
             eventsToRender = self._cleanEvents(data);
