@@ -1239,36 +1239,35 @@
               
               
               var $weekDay;
-              while(start.getDay() != end.getDay())
-              {
+              while(start.getDay() != end.getDay()){
                 calEvent.start = start;
                 //end of this virual calEvent is set to the end of the day 
-                calEvent.end.setDate(start.getDate());
-                calEvent.end.setMonth(start.getMonth());
                 calEvent.end.setFullYear(start.getFullYear());
+                calEvent.end.setMonth(start.getMonth());
+                calEvent.end.setDate(start.getDate());
                 calEvent.end.setHours(maxHour);
                 calEvent.end.setMinutes(59);
                 calEvent.end.setSeconds(59);
                 $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
                 
                 if ($weekDay) {
+                  self._renderEvent(calEvent, $weekDay);
+                }
+              
+                //start is set to the begin of the new day
+                start.setDate( start.getDate() + 1);
+                start.setHours( minHour );
+                start.setMinutes( 0 );
+              }
+              calEvent.start = start;
+              calEvent.end = initialEnd;
+              $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
+              
+              if ($weekDay) {
                 self._renderEvent(calEvent, $weekDay);
               }
-              
-              //start is set to the begin of the new day
-              start.setTime( start.getTime() + 24*3600*1000);
-              start.setHours( minHour );
-              start.setMinutes( 0 );
-            }
-            calEvent.start = start;
-            calEvent.end = initialEnd;
-            $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
-            
-            if ($weekDay) {
-              self._renderEvent(calEvent, $weekDay);
-            }
-            //put back the initial start date 
-            calEvent.start = initialStart;
+              //put back the initial start date 
+              calEvent.start = initialStart;
          /*
             var $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
 
