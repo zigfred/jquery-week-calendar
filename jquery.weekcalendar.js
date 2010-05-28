@@ -1268,13 +1268,6 @@
               }
               //put back the initial start date 
               calEvent.start = initialStart;
-         /*
-            var $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
-
-            if ($weekDay) {
-               self._renderEvent(calEvent, $weekDay);
-            }
-          */
          });
 
          $weekDayColumns.each(function() {
