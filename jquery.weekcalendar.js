@@ -1228,12 +1228,54 @@
            self._renderFreeBusys(data);
          }
          $.each(eventsToRender, function(i, calEvent) {
-
+              //render a multi day event as various event :
+              //thanks to http://github.com/fbeauchamp/jquery-week-calendar
+              var initialStart = new Date(calEvent.start);
+              var initialEnd = new Date(calEvent.end);
+              var maxHour = self.options.businessHours.limitDisplay ?  self.options.businessHours.end -1 : 23;
+              var minHour = self.options.businessHours.limitDisplay ?  self.options.businessHours.start : 0;
+              var start = new Date(calEvent.start);
+              var end = new Date(calEvent.end);
+              
+              
+              var $weekDay;
+              while(start.getDay() != end.getDay())
+              {
+                calEvent.start = start;
+                //end of this virual calEvent is set to the end of the day 
+                calEvent.end.setDate(start.getDate());
+                calEvent.end.setMonth(start.getMonth());
+                calEvent.end.setFullYear(start.getFullYear());
+                calEvent.end.setHours(maxHour);
+                calEvent.end.setMinutes(59);
+                calEvent.end.setSeconds(59);
+                $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
+                
+                if ($weekDay) {
+                self._renderEvent(calEvent, $weekDay);
+              }
+              
+              //start is set to the begin of the new day
+              start.setTime( start.getTime() + 24*3600*1000);
+              start.setHours( minHour );
+              start.setMinutes( 0 );
+            }
+            calEvent.start = start;
+            calEvent.end = initialEnd;
+            $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
+            
+            if ($weekDay) {
+              self._renderEvent(calEvent, $weekDay);
+            }
+            //put back the initial start date 
+            calEvent.start = initialStart;
+         /*
             var $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
 
             if ($weekDay) {
                self._renderEvent(calEvent, $weekDay);
             }
+          */
          });
 
          $weekDayColumns.each(function() {
