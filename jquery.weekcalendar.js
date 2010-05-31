@@ -1649,7 +1649,7 @@
                var $weekDayColumns = self.element.find(".wc-day-column-inner");
 
                 //trigger drop callback
-               options.eventDrop(newCalEvent, calEvent, $newEvent);
+               options.eventDrop(newCalEvent, calEvent, $calEvent);
 
                var $newEvent = self._renderEvent(newCalEvent, self._findWeekDayForEvent(newCalEvent, $weekDayColumns));
                $calEvent.hide();
