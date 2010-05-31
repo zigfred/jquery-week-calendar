@@ -56,6 +56,7 @@
          allowCalEventOverlap : false,
          overlapEventsSeparate: false,
          readonly: false,
+         allowEventCreation: true,
          draggable : function(calEvent, element) {
             return true;
          },
@@ -573,7 +574,9 @@
         $weekDayColumns.each(function(i, val) {
             if (!options.readonly) {
                self._addDroppableToWeekDay($(this));
-               self._setupEventCreationForWeekDay($(this));
+			   if (options.allowEventCreation) {
+                  self._setupEventCreationForWeekDay($(this));
+			   }
             }
         });
       },
