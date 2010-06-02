@@ -240,6 +240,7 @@
          $(window).unbind("resize.weekcalendar");
          $(window).bind("resize.weekcalendar", function() {
             self._resizeCalendar();
+            self.trigger('resize');
          });
 
       },
