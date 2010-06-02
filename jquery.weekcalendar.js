@@ -56,6 +56,7 @@
          allowCalEventOverlap : false,
          overlapEventsSeparate: false,
          readonly: false,
+         allowEventCreation: true,
          draggable : function(calEvent, element) {
             return true;
          },
@@ -240,7 +241,6 @@
          $(window).unbind("resize.weekcalendar");
          $(window).bind("resize.weekcalendar", function() {
             self._resizeCalendar();
-            self._trigger('resize', self);
          });
 
       },
@@ -497,6 +497,7 @@
             var headerHeight = this.element.find(".wc-header").outerHeight();
             var navHeight = this.element.find(".wc-toolbar").outerHeight();
             this.element.find(".wc-scrollable-grid").height(calendarHeight - navHeight - headerHeight);
+            this._trigger('resize', this);
          }
       },
 
@@ -513,12 +514,10 @@
             if ($target.data("preventClick")) {
                return;
             }
-            if ($target.hasClass("wc-cal-event")) {
-               freeBusyManager = self.getFreeBusyManagerForEvent($target.data("calEvent"));
-               options.eventClick($target.data("calEvent"), $target, freeBusyManager, event);
-            } else if ($target.parent().hasClass("wc-cal-event")) {
-               freeBusyManager = self.getFreeBusyManagerForEvent($target.parent().data("calEvent"));
-               options.eventClick($target.parent().data("calEvent"), $target.parent(), freeBusyManager, event);
+            var $calEvent = $target.hasClass("wc-cal-event") ? $target : $target.parents('.wc-cal-event');
+            if ($calEvent.length) {
+               freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data("calEvent"));
+               options.eventClick($calEvent.data("calEvent"), $calEvent, freeBusyManager, event);
             }
          }).mouseover(function(event) {
             var $target = $(event.target);
@@ -574,7 +573,9 @@
         $weekDayColumns.each(function(i, val) {
             if (!options.readonly) {
                self._addDroppableToWeekDay($(this));
-               self._setupEventCreationForWeekDay($(this));
+			   if (options.allowEventCreation) {
+                  self._setupEventCreationForWeekDay($(this));
+			   }
             }
         });
       },
@@ -1654,7 +1655,7 @@
                var $weekDayColumns = self.element.find(".wc-day-column-inner");
 
                 //trigger drop callback
-               options.eventDrop(newCalEvent, calEvent, $newEvent);
+               options.eventDrop(newCalEvent, calEvent, $calEvent);
 
                var $newEvent = self._renderEvent(newCalEvent, self._findWeekDayForEvent(newCalEvent, $weekDayColumns));
                $calEvent.hide();
