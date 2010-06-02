@@ -1071,6 +1071,12 @@
          var self = this;
          var options = this.options;
          date = dateWithinWeek || options.date;
+         if(   ( !date || !date.getTime )
+            || ( !options.date || !options.date.getTime )
+            || date.getTime() != options.date.getTime()
+          ){
+            this._trigger('changedate', this.element, date);
+          }
          this.options.date = date;
          weekStartDate = self._dateFirstDayOfWeek(date);
          weekEndDate = self._dateLastMilliOfWeek(date);
