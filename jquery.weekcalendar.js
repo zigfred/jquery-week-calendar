@@ -496,7 +496,7 @@
             var headerHeight = this.element.find(".wc-header").outerHeight();
             var navHeight = this.element.find(".wc-toolbar").outerHeight();
             this.element.find(".wc-scrollable-grid").height(calendarHeight - navHeight - headerHeight);
-            self._trigger('resize', self);
+            this._trigger('resize', this);
          }
       },
 
