@@ -513,12 +513,10 @@
             if ($target.data("preventClick")) {
                return;
             }
-            if ($target.hasClass("wc-cal-event")) {
-               freeBusyManager = self.getFreeBusyManagerForEvent($target.data("calEvent"));
-               options.eventClick($target.data("calEvent"), $target, freeBusyManager, event);
-            } else if ($target.parent().hasClass("wc-cal-event")) {
-               freeBusyManager = self.getFreeBusyManagerForEvent($target.parent().data("calEvent"));
-               options.eventClick($target.parent().data("calEvent"), $target.parent(), freeBusyManager, event);
+            var $calEvent = $target.hasClass("wc-cal-event") ? $target : $target.parents('.wc-cal-event');
+            if ($calEvent.length) {
+               freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data("calEvent"));
+               options.eventClick($calEvent.data("calEvent"), $calEvent, freeBusyManager, event);
             }
          }).mouseover(function(event) {
             var $target = $(event.target);
