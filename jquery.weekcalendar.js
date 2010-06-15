@@ -238,7 +238,7 @@
          self._renderCalendar();
          self._loadCalEvents();
          self._resizeCalendar();
-         self._scrollToHour(self.options.date.getHours());
+         self._scrollToHour(self.options.date.getHours(), true);
 
          $(window).unbind("resize.weekcalendar");
          $(window).bind("resize.weekcalendar", function() {
@@ -319,7 +319,7 @@
          self._renderCalendar();
          self._loadCalEvents();
          self._resizeCalendar();
-         self._scrollToHour(hour);
+         self._scrollToHour(hour, false);
 
          $(window).unbind("resize.weekcalendar");
          $(window).bind("resize.weekcalendar", function() {
@@ -1175,7 +1175,7 @@
                $weekDayColumns = self.element.find(".wc-time-slots .wc-day-column-inner");
                self._updateDayColumnHeader($weekDayColumns);
                self._resizeCalendar();
-							 self._scrollToHour(hour);
+							 self._scrollToHour(hour, false);
             }
 
          }
@@ -1673,11 +1673,12 @@
       /*
        * Scroll the calendar to a specific hour
        */
-      _scrollToHour : function(hour) {
+      _scrollToHour: function(hour, animate) {
          var self = this;
          var options = this.options;
          var $scrollable = this.element.find(".wc-scrollable-grid");
          var slot = hour;
+				 var animate = animate;
          if (self.options.businessHours.limitDisplay) {
             if (hour <= self.options.businessHours.start) {
                slot = 0;
@@ -1695,7 +1696,12 @@
          $scrollable.animate({scrollTop: 0}, 0, function() {
             var targetOffset = $target.offset().top;
             var scroll = targetOffset - $scrollable.offset().top - $target.outerHeight();
-            $scrollable.animate({scrollTop: scroll}, options.scrollToHourMillis);
+						if(animate){
+							$scrollable.animate({scrollTop: scroll}, options.scrollToHourMillis);
+						}
+						else{
+							$scrollable.animate({scrollTop: scroll}, 0);
+						}
          });
       },
 
