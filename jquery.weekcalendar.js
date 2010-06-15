@@ -1258,7 +1258,7 @@
 
          eventClass = calEvent.id ? "wc-cal-event" : "wc-cal-event wc-new-cal-event";
          eventHtml = "<div class=\"" + eventClass + " ui-corner-all\">\
-                <div class=\"wc-time ui-corner-all\"></div>\
+                <div class=\"wc-time ui-corner-top\"></div>\
                 <div class=\"wc-title\"></div></div>";
 
          $weekDay.each(function(){
