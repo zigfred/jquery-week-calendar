@@ -220,12 +220,12 @@
           *  - %date%
           */
          title : '%start% - %end%',
-				 /**
-					* default options to pass to callback
-					* you can pass a function returning an object or a litteral object
-					* @param {object|function(#calendar)}
-					*/
-				 jsonOptions: {}
+				/**
+				 * default options to pass to callback
+				 * you can pass a function returning an object or a litteral object
+				 * @param {object|function(#calendar)}
+				 */
+				jsonOptions: {}
       },
 
       /***********************
