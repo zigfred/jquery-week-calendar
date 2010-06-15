@@ -219,7 +219,13 @@
           *  - %end%
           *  - %date%
           */
-         title : '%start% - %end%'
+         title : '%start% - %end%',
+				/**
+				 * default options to pass to callback
+				 * you can pass a function returning an object or a litteral object
+				 * @param {object|function(#calendar)}
+				 */
+				jsonOptions: {}
       },
 
       /***********************
@@ -1043,7 +1049,7 @@
          //load events by chosen means
          if (typeof options.data == 'string') {
             if (options.loading) options.loading(true);
-            var jsonOptions = {};
+            var jsonOptions = self._getJsonOptions();
             jsonOptions[options.startParam || 'start'] = Math.round(weekStartDate.getTime() / 1000);
             jsonOptions[options.endParam || 'end'] = Math.round(weekEndDate.getTime() / 1000);
             $.ajax({
@@ -1143,7 +1149,7 @@
       /*
        * Render the events into the calendar
        */
-      _renderEvents : function (data, $weekDayColumns) {
+      _renderEvents: function (data, $weekDayColumns) {
 
          var self = this;
          var options = this.options;
@@ -1163,11 +1169,13 @@
             self._computeOptions();
 
             if (updateLayout) {
+							 var hour = self._getCurrentScrollHour();
                self.element.empty();
                self._renderCalendar();
                $weekDayColumns = self.element.find(".wc-time-slots .wc-day-column-inner");
                self._updateDayColumnHeader($weekDayColumns);
                self._resizeCalendar();
+							 self._scrollToHour(hour);
             }
 
          }
@@ -1250,7 +1258,7 @@
 
          eventClass = calEvent.id ? "wc-cal-event" : "wc-cal-event wc-new-cal-event";
          eventHtml = "<div class=\"" + eventClass + " ui-corner-all\">\
-                <div class=\"wc-time ui-corner-all\"></div>\
+                <div class=\"wc-time ui-corner-top\"></div>\
                 <div class=\"wc-title\"></div></div>";
 
          $weekDay.each(function(){
@@ -2348,7 +2356,16 @@
            scroll = scroll + options.businessHours.start * options.timeslotHeight * options.timeslotsPerHour;
          }
          return Math.round(scroll / (options.timeslotHeight * options.timeslotsPerHour)) + 1;
-      }
+      },
+			_getJsonOptions: function(){
+				if($.isFunction(this.options.jsonOptions)){
+					 return $.extend({}, this.options.jsonOptions(this.element));
+				}
+				if($.isPlainObject(this.options.jsonOptions)){
+					return $.extend({}, this.options.jsonOptions);
+				}
+				return {};
+			}
 
 
       
