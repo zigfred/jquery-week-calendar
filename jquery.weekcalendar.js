@@ -1625,7 +1625,7 @@
             minHeight: options.timeslotHeight,
             stop :function(event, ui) {
                var $calEvent = ui.element;
-               var newEnd = new Date($calEvent.data("calEvent").start.getTime() + (ui.size.height / options.timeslotHeight) * options.millisPerTimeslot);
+               var newEnd = new Date($calEvent.data("calEvent").start.getTime() + Math.max(1,Math.round(ui.size.height / options.timeslotHeight)) * options.millisPerTimeslot);
                var newCalEvent = $.extend(true, {}, calEvent, {start: calEvent.start, end: newEnd});
                //var newCalEvent = $.extend($.extend({}, calEvent), {start: calEvent.start, end: newEnd});
                self._adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent);
@@ -2357,7 +2357,7 @@
    });
 
    $.extend($.ui.weekCalendar, {
-      version: '1.2.2-pre'
+      version: '2.0-dev'
    });
 
    var MILLIS_IN_DAY = 86400000;
