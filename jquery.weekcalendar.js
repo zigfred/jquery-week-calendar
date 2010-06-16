@@ -1162,7 +1162,7 @@
             $.each(data.options, function(key, value) {
                if (value !== options[key]) {
                   options[key] = value;
-                  updateLayout = true;
+                  updateLayout = updateLayout || $.ui.weekCalendar.updateLayoutOptions[key];
                }
             });
 
@@ -2380,7 +2380,30 @@
    });
 
    $.extend($.ui.weekCalendar, {
-      version: '2.0-dev'
+      version: '2.0-dev',
+			updateLayoutOptions:{
+				startOnFirstDayOfWeek: true,
+				firstDayOfWeek: true,
+				daysToShow: true,
+				displayOddEven: true,
+				timeFormat: true,
+				dateFormat: true,
+				use24Hour: true,
+				useShortDayNames: true,
+				businessHours: true,
+				timeslotHeight: true,
+				timeslotsPerHour: true,
+				buttonText: true,
+				height: true,
+				shortMonths: true,
+				longMonths: true,
+				shortDays: true,
+				longDays: true,
+				textSize: true,
+				users: true,
+				showAsSeparateUsers: true,
+				displayFreeBusys: true
+			}
    });
 
    var MILLIS_IN_DAY = 86400000;
