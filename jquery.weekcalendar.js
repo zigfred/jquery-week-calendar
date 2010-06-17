@@ -215,15 +215,18 @@
          textSize : 13,
          /**
           * the title attribute for the calendar. possible placeholders are:
-          *  - %start%
-          *  - %end%
-          *  - %date%
+					* <ul>
+          *  <li>%start%</li>
+          *  <li>%end%</li>
+          *  <li>%date%</li>
+					* </ul>
+					* @type {string}
           */
          title : '%start% - %end%',
 				/**
 				 * default options to pass to callback
 				 * you can pass a function returning an object or a litteral object
-				 * @param {object|function(#calendar)}
+				 * @type {object|function(#calendar)}
 				 */
 				jsonOptions: {}
       },
@@ -1894,8 +1897,9 @@
       _formatDate : function(date, format) {
          var options = this.options;
          var returnStr = '';
+				 var curChar;
          for (var i = 0; i < format.length; i++) {
-            var curChar = format.charAt(i);
+            curChar = format.charAt(i);
             if ($.isFunction(this._replaceChars[curChar])) {
             //   returnStr += this._replaceChars[curChar](date, options);
               var res = this._replaceChars[curChar](date, options);
