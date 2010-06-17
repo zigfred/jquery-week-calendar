@@ -1868,7 +1868,7 @@
        */
       _rotate : function(a /*array*/, p /* integer, positive integer rotate to the right, negative to the left... */) {
          for (var l = a.length, p = (Math.abs(p) >= l && (p %= l),p < 0 && (p += l),p), i, x; p; p = (Math.ceil(l / p) - 1) * p - l + (l = p)) {
-            for (i = l; i > p; x = a[--i],a[i] = a[i - p],a[i - p] = x);
+            for (i = l; i > p; x = a[--i],a[i] = a[i - p],a[i - p] = x){};
          }
          return a;
       },
@@ -1897,9 +1897,8 @@
       _formatDate : function(date, format) {
          var options = this.options;
          var returnStr = '';
-				 var curChar;
-         for (var i = 0; i < format.length; i++) {
-            curChar = format.charAt(i);
+         for(var i = 0; i < format.length; i++) {
+            var curChar = format.charAt(i);
             if ($.isFunction(this._replaceChars[curChar])) {
             //   returnStr += this._replaceChars[curChar](date, options);
               var res = this._replaceChars[curChar](date, options);
