@@ -215,15 +215,18 @@
          textSize : 13,
          /**
           * the title attribute for the calendar. possible placeholders are:
-          *  - %start%
-          *  - %end%
-          *  - %date%
+					* <ul>
+          *  <li>%start%</li>
+          *  <li>%end%</li>
+          *  <li>%date%</li>
+					* </ul>
+					* @type {string}
           */
          title : '%start% - %end%',
 				/**
 				 * default options to pass to callback
 				 * you can pass a function returning an object or a litteral object
-				 * @param {object|function(#calendar)}
+				 * @type {object|function(#calendar)}
 				 */
 				jsonOptions: {}
       },
@@ -443,6 +446,12 @@
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
+			getCurrentFirstDay: function(){
+				return this._dateFirstDayOfWeek(this.options.date || new Date());
+			},
+			getCurrentLastDay: function(){
+				return this._addDays(this.getCurrentFirstDay(), this.options.daysToShow - 1);
+			},
 /*
       getData : function(key) {
          return this._getData(key);
@@ -1866,7 +1875,7 @@
        */
       _rotate : function(a /*array*/, p /* integer, positive integer rotate to the right, negative to the left... */) {
          for (var l = a.length, p = (Math.abs(p) >= l && (p %= l),p < 0 && (p += l),p), i, x; p; p = (Math.ceil(l / p) - 1) * p - l + (l = p)) {
-            for (i = l; i > p; x = a[--i],a[i] = a[i - p],a[i - p] = x);
+            for (i = l; i > p; x = a[--i],a[i] = a[i - p],a[i - p] = x){};
          }
          return a;
       },
@@ -1895,7 +1904,7 @@
       _formatDate : function(date, format) {
          var options = this.options;
          var returnStr = '';
-         for (var i = 0; i < format.length; i++) {
+         for(var i = 0; i < format.length; i++) {
             var curChar = format.charAt(i);
             if ($.isFunction(this._replaceChars[curChar])) {
             //   returnStr += this._replaceChars[curChar](date, options);
