@@ -446,6 +446,12 @@
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
+			getCurrentFirstDay: function(){
+				return this._dateFirstDayOfWeek(this.options.date || new Date());
+			},
+			getCurrentLastDay: function(){
+				return this._addDays(this.getCurrentFirstDay(), this.options.daysToShow - 1);
+			},
 /*
       getData : function(key) {
          return this._getData(key);
