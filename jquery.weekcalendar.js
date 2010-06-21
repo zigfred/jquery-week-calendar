@@ -694,12 +694,18 @@
 
           for (var i = 1; i <= options.daysToShow; i++){
             for(var j = 0; j< uLength; j++){
+							_headerClass=[];
 							if(j==0){
-								_headerClass='wc-day-column-first';
-							}else if(j == uLength - 1){
-								_headerClass='wc-day-column-last';
-							}else{
+								_headerClass.push('wc-day-column-first');
+							}
+							if(j == uLength - 1){
+								_headerClass.push('wc-day-column-last');
+							}
+							if(!_headerClass.lenght){
 								_headerClass='wc-day-column-middle';
+							}
+							else{
+								_headerClass=_headerClass.join(' ');
 							}
               calendarHeaderHtml+= "<td class=\""+_headerClass+" wc-user-header wc-day-" + i + " wc-user-" + self._getUserIdFromIndex(j) +"\">";
 //              calendarHeaderHtml+=   "<div class=\"wc-user-header wc-day-" + i + " wc-user-" + self._getUserIdFromIndex(j) +"\" >";
@@ -925,7 +931,19 @@
             var uLength   = options.users.length;
             var columnclass;
             for(var j = 0; j< uLength; j++){
-              columnclass = j ? ((j == uLength - 1) ? "wc-day-column-last" :  "wc-day-column-middle" ) : "wc-day-column-first";
+							columnclass=[];
+							if(j==0){
+								columnclass.push('wc-day-column-first');
+							}
+							if(j == uLength - 1){
+								columnclass.push('wc-day-column-last');
+							}
+							if(!columnclass.lenght){
+								columnclass='wc-day-column-middle';
+							}
+							else{
+								columnclass=columnclass.join(' ');
+							}
               renderRow+= "<td class=\"wc-day-column " + columnclass + " day-" + i + "\">";
               renderRow+=   "<div class=\"wc-full-height-column wc-day-column-inner day-" + i 
               renderRow+=      " wc-user-" + self._getUserIdFromIndex(j) + "\">";
