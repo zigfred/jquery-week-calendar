@@ -701,7 +701,7 @@
 							if(j == uLength - 1){
 								_headerClass.push('wc-day-column-last');
 							}
-							if(!_headerClass.lenght){
+							if(!_headerClass.length){
 								_headerClass='wc-day-column-middle';
 							}
 							else{
@@ -923,7 +923,7 @@
         //now let's display events placeholders
         for (var i = 1; i <= options.daysToShow; i++){
           if(!showAsSeparatedUser){
-            renderRow+= "<td class=\"wc-day-column wc-day-column-first day-" + i + "\">";
+            renderRow+= "<td class=\"wc-day-column wc-day-column-first wc-day-column-last day-" + i + "\">";
             renderRow+= "<div class=\"wc-full-height-column wc-day-column-inner day-" + i + "\"></div>";
             renderRow+= "</td>";
           }
@@ -938,7 +938,7 @@
 							if(j == uLength - 1){
 								columnclass.push('wc-day-column-last');
 							}
-							if(!columnclass.lenght){
+							if(!columnclass.length){
 								columnclass='wc-day-column-middle';
 							}
 							else{
