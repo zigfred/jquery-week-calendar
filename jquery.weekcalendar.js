@@ -677,12 +677,12 @@
             rowspan="", colspan, calendarHeaderHtml;
 
         if(showAsSeparatedUser){
-//          rowspan = " rowspan=\"2\"";
+          rowspan = " rowspan=\"2\"";
           colspan = " colspan=\""+options.users.length+"\" ";
         }
 
         //first row
-        calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"" + /*rowspan +*/ "></td>";
+        calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"></td>";
         for (var i = 1; i <= options.daysToShow; i++) {
           calendarHeaderHtml += "<td class=\"wc-day-column-header wc-day-" + i + "\""+colspan+"></td>";
         }
