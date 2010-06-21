@@ -504,7 +504,6 @@
        * Resize the calendar scrollable height based on the provided function in options.
        */
       _resizeCalendar : function () {
-
          var options = this.options;
          if (options && $.isFunction(options.height)) {
             var calendarHeight = options.height(this.element);
@@ -567,7 +566,6 @@
        * Render the main calendar layout
        */
       _renderCalendar : function() {
-
         var $calendarContainer, $weekDayColumns;
         var self = this;
         var options = this.options;
@@ -773,7 +771,7 @@
        * render the timeslots separation 
        */
       _renderCalendarBodyTimeSlots: function($calendarTableTbody){
-        var self = this, options = this.options,
+        var options = this.options,
             renderRow, i, j,
             showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
             start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
@@ -781,8 +779,8 @@
             rowspan = 1;
 
         //calculate the rowspan
-        if(this.options.displayOddEven){ rowspan+= 1; }
-        if(this.options.displayFreeBusys){ rowspan+= 1; }
+        if(options.displayOddEven){ rowspan+= 1; }
+        if(options.displayFreeBusys){ rowspan+= 1; }
         if(rowspan > 1){
           rowspan = " rowspan=\""+rowspan+"\"";
         }
@@ -816,19 +814,10 @@
        */
       _renderCalendarBodyOddEven: function($calendarTableTbody){
         if(this.options.displayOddEven){
-          var self = this, options = this.options,
-              renderRow, i, j,
+          var options = this.options,
+              renderRow = "<tr class=\"wc-grid-row-oddeven\">",
               showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
-              start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
-              end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 ),
               oddEven;
-
-          renderRow = "<tr class=\"wc-grid-row-oddeven\">";
-
-          //prepare for multi-user view
-          if(showAsSeparatedUser){
-            var uLength   = options.users.length;
-          }
 
           //now let's display oddEven placeholders
           for (var i = 1; i <= options.daysToShow; i++){
@@ -842,6 +831,7 @@
                 renderRow+= "</td>";
               }
               else{
+                var uLength = options.users.length;
                 for(var j = 0; j< uLength; j++){
                    oddEven = ( oddEven == "odd" ? 'even' : 'odd' );
                    renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
@@ -865,17 +855,9 @@
       _renderCalendarBodyFreeBusy: function($calendarTableTbody){
         if(this.options.displayFreeBusys){
           var self = this, options = this.options,
-              renderRow, i, j,
-              showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
-              start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
-              end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 );
-          renderRow = "<tr class=\"wc-grid-row-freebusy\">";
-          renderRow+=  "</td>";
-
-          //prepare for multi-user view
-          if(showAsSeparatedUser){
-            var uLength   = options.users.length;
-          }
+              renderRow = "<tr class=\"wc-grid-row-freebusy\">",
+              showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
+          renderRow += "</td>";
 
           //now let's display freebusy placeholders
           for (var i = 1; i <= options.daysToShow; i++){
@@ -888,6 +870,7 @@
                 renderRow+= "</td>";
               }
               else{
+                var uLength  = options.users.length;
                 for(var j = 0; j< uLength; j++){
                    renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
                    renderRow+=   "<div class=\"wc-no-height-wrapper wc-freebusy-wrapper\">";
@@ -912,7 +895,7 @@
        */
       _renderCalendarBodyEvents: function($calendarTableTbody){
         var self = this, options = this.options,
-            renderRow, i, j,
+            renderRow,
             showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
             start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
             end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 );
@@ -931,12 +914,6 @@
         }
         renderRow+=  "</td>";
 
-        //prepare for multi-user view
-        if(showAsSeparatedUser){
-          var uLength   = options.users.length;
-          var columnclass;
-        }
-
         //now let's display events placeholders
         for (var i = 1; i <= options.daysToShow; i++){
           if(!showAsSeparatedUser){
@@ -945,6 +922,8 @@
             renderRow+= "</td>";
           }
           else{
+            var uLength   = options.users.length;
+            var columnclass;
             for(var j = 0; j< uLength; j++){
               columnclass = j ? ((j == uLength - 1) ? "wc-day-column-last" :  "wc-day-column-middle" ) : "wc-day-column-first";
               renderRow+= "<td class=\"wc-day-column " + columnclass + " day-" + i + "\">";
@@ -1046,7 +1025,7 @@
        */
       _loadCalEvents : function(dateWithinWeek) {
 
-         var date, weekStartDate, endDate, $weekDayColumns;
+         var date, weekStartDate, weekEndDate, $weekDayColumns;
          var self = this;
          var options = this.options;
          date = dateWithinWeek || options.date;
@@ -1183,13 +1162,11 @@
        * Render the events into the calendar
        */
       _renderEvents: function (data, $weekDayColumns) {
-
          var self = this;
          var options = this.options;
          var eventsToRender;
 
          if (data.options) {
-
             var updateLayout = false;
             //update options
             $.each(data.options, function(key, value) {
@@ -1210,7 +1187,6 @@
                self._resizeCalendar();
 							 self._scrollToHour(hour, false);
             }
-
          }
          this._clearCalendar();
 
@@ -1451,7 +1427,6 @@
        */
       _updateEventInCalendar : function (calEvent) {
          var self = this;
-         var options = this.options;
          self._cleanEvent(calEvent);
 
          if (calEvent.id) {
@@ -1571,9 +1546,7 @@
        * Add draggable capabilities to an event
        */
       _addDraggableToCalEvent : function(calEvent, $calEvent) {
-         var self = this;
          var options = this.options;
-         var $weekDay = self._findWeekDayForEvent(calEvent, self.element.find(".wc-time-slots .wc-day-column-inner"));
          $calEvent.draggable({
             handle : ".wc-time",
             containment: ".wc-scrollable-grid",
@@ -1585,7 +1558,6 @@
                options.eventDrag(calEvent, $calEvent);
             }
          });
-
       },
 
       /*
@@ -1602,7 +1574,6 @@
                var eventDuration = self._getEventDurationFromPositionedEventElement($weekDay, $calEvent, top);
                var calEvent = $calEvent.data("calEvent");
                var newCalEvent = $.extend(true, {}, calEvent, {start: eventDuration.start, end: eventDuration.end});
-//               var newCalEvent = $.extend(false, calEvent, {start: eventDuration.start, end: eventDuration.end});
                var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
                 if(showAsSeparatedUser){
                   // we may have dragged the event on column with a new user.
@@ -1668,7 +1639,6 @@
                var $calEvent = ui.element;
                var newEnd = new Date($calEvent.data("calEvent").start.getTime() + Math.max(1,Math.round(ui.size.height / options.timeslotHeight)) * options.millisPerTimeslot);
                var newCalEvent = $.extend(true, {}, calEvent, {start: calEvent.start, end: newEnd});
-               //var newCalEvent = $.extend($.extend({}, calEvent), {start: calEvent.start, end: newEnd});
                self._adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent);
 
                self._refreshEventDetails(newCalEvent, $calEvent);
@@ -1710,7 +1680,6 @@
          var options = this.options;
          var $scrollable = this.element.find(".wc-scrollable-grid");
          var slot = hour;
-				 var animate = animate;
          if (self.options.businessHours.limitDisplay) {
             if (hour <= self.options.businessHours.start) {
                slot = 0;
@@ -1912,7 +1881,7 @@
        */
       _cleanDate : function(d) {
          if (typeof d == 'string') {
-            return $.weekCalendar.parseISO8601(d, true) || Date.parse(d) || new Date(parseInt(d));
+            return Date.parse(d) || new Date(parseInt(d));
          }
          if (typeof d == 'number') {
             return new Date(d);
@@ -2136,9 +2105,8 @@
        * default is freeBusy.userId field.
        */
       _getFreeBusyUserId: function(freeBusy){
-        var self = this,
-            options = this.options,
-            ret;
+        var self = this;
+        var options = this.options;
         if($.isFunction(options.getFreeBusyUserId)){
           return options.getFreeBusyUserId(freeBusy.getOption(), self.element);
         }
@@ -2200,7 +2168,6 @@
       _renderFreeBusys: function(freeBusys){
         if(this.options.displayFreeBusys){
           var self = this,
-              options = this.options,
               $freeBusyPlaceholders = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy'),
               freebusysToRender;
           //insert freebusys to dedicated placeholders freebusy managers 
@@ -2450,48 +2417,6 @@
 
    var MILLIS_IN_DAY = 86400000;
    var MILLIS_IN_WEEK = MILLIS_IN_DAY * 7;
-
-   $.weekCalendar = function() {
-      return {
-         parseISO8601 : function(s, ignoreTimezone) {
-
-            // derived from http://delete.me.uk/2005/03/iso8601.html
-            var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
-                         "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
-                         "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
-            var d = s.match(new RegExp(regexp));
-            if (!d) return null;
-            var offset = 0;
-            var date = new Date(d[1], 0, 1);
-            if (d[3]) {
-               date.setMonth(d[3] - 1);
-            }
-            if (d[5]) {
-               date.setDate(d[5]);
-            }
-            if (d[7]) {
-               date.setHours(d[7]);
-            }
-            if (d[8]) {
-               date.setMinutes(d[8]);
-            }
-            if (d[10]) {
-               date.setSeconds(d[10]);
-            }
-            if (d[12]) {
-               date.setMilliseconds(Number("0." + d[12]) * 1000);
-            }
-            if (!ignoreTimezone) {
-               if (d[14]) {
-                  offset = (Number(d[16]) * 60) + Number(d[17]);
-                  offset *= ((d[15] == '-') ? 1 : -1);
-               }
-               offset -= date.getTimezoneOffset();
-            }
-            return new Date(Number(date) + (offset * 60 * 1000));
-         }
-      };
-   }();
 
     /* FREE BUSY MANAGERS */
     var FreeBusyProto = {
