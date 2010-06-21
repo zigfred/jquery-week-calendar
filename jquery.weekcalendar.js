@@ -228,7 +228,13 @@
 				 * you can pass a function returning an object or a litteral object
 				 * @type {object|function(#calendar)}
 				 */
-				jsonOptions: {}
+				jsonOptions: {},
+				headerSeparator: '<br />',
+				/**
+				 * returns formatted header for day display
+				 * @param {function(date,calendar)}
+				 */
+				getHeaderDate: null
       },
 
       /***********************
@@ -671,12 +677,12 @@
             rowspan="", colspan, calendarHeaderHtml;
 
         if(showAsSeparatedUser){
-          rowspan = " rowspan=\"2\"";
+//          rowspan = " rowspan=\"2\"";
           colspan = " colspan=\""+options.users.length+"\" ";
         }
 
         //first row
-        calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"" + rowspan + "></td>";
+        calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"" + /*rowspan +*/ "></td>";
         for (var i = 1; i <= options.daysToShow; i++) {
           calendarHeaderHtml += "<td class=\"wc-day-column-header wc-day-" + i + "\""+colspan+"></td>";
         }
@@ -684,15 +690,23 @@
 
         //users row
         if(showAsSeparatedUser){
-          calendarHeaderHtml += "<tr>";
-          var uLength = options.users.length;
+          calendarHeaderHtml += "<tr><td class=\"wc-time-column-header\"></td>";
+          var uLength = options.users.length,
+							_headerClass='';
 
           for (var i = 1; i <= options.daysToShow; i++){
             for(var j = 0; j< uLength; j++){
-               calendarHeaderHtml+= "<td>";
-               calendarHeaderHtml+=   "<div class=\"wc-user-header wc-day-" + i + " wc-user-" + self._getUserIdFromIndex(j) + "\" >";
-               calendarHeaderHtml+=     self._getUserName(j);
-               calendarHeaderHtml+=   "</div>";
+							if(j==0){
+								_headerClass='wc-day-column-first';
+							}else if(j == uLength - 1){
+								_headerClass='wc-day-column-last';
+							}else{
+								_headerClass='wc-day-column-middle';
+							}
+              calendarHeaderHtml+= "<td class=\""+_headerClass+" wc-user-header wc-day-" + i + " wc-user-" + self._getUserIdFromIndex(j) +"\">";
+//              calendarHeaderHtml+=   "<div class=\"wc-user-header wc-day-" + i + " wc-user-" + self._getUserIdFromIndex(j) +"\" >";
+              calendarHeaderHtml+=     self._getUserName(j);
+//							calendarHeaderHtml+=   "</div>";
               calendarHeaderHtml += "</td>";
             }
           }
@@ -1099,10 +1113,7 @@
          var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
 
          self.element.find(".wc-header td.wc-day-column-header").each(function(i, val) {
-
-            var dayName = options.useShortDayNames ? options.shortDays[currentDay.getDay()] : options.longDays[currentDay.getDay()];
-
-            $(this).html(dayName + "<br/>" + self._formatDate(currentDay, options.dateFormat));
+            $(this).html(self._getHeaderDate(currentDay));
             if (self._isToday(currentDay)) {
                $(this).addClass("wc-today");
             } else {
@@ -1111,6 +1122,19 @@
             currentDay = self._addDays(currentDay, 1);
 
          });
+
+         currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
+				 if(showAsSeparatedUser)
+				 {
+						self.element.find('.wc-header td.wc-user-header').each(function(i, val){
+							if (self._isToday(currentDay)) {
+								 $(this).addClass("wc-today");
+							} else {
+								 $(this).removeClass("wc-today");
+							}
+							currentDay = ((i+1) % options.users.length) ? currentDay : self._addDays(currentDay, 1);
+						});
+				 }
 
          currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
 
@@ -2380,6 +2404,15 @@
 					return $.extend({}, this.options.jsonOptions);
 				}
 				return {};
+			},
+			_getHeaderDate: function(date){
+				var options = this.options;
+				if(options.getHeaderDate && $.isFunction(options.getHeaderDate))
+				{
+					return options.getHeaderDate(date, this.element);
+				}
+				var dayName = options.useShortDayNames ? options.shortDays[date.getDay()] : options.longDays[date.getDay()];
+				return dayName + (options.headerSeparator) + this._formatDate(date, options.dateFormat);
 			}
 
 
