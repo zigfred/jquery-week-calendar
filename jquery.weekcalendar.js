@@ -1567,7 +1567,7 @@
          var options = this.options;
          $calEvent.draggable({
             handle : ".wc-time",
-            containment: ".wc-scrollable-grid",
+            containment: ".wc-scrollable-grid table",
             revert: 'valid',
             opacity: 0.5,
             grid : [$calEvent.outerWidth() + 1, options.timeslotHeight ],
