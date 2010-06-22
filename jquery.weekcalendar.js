@@ -1593,7 +1593,7 @@
                var calEvent = $calEvent.data("calEvent");
                var newCalEvent = $.extend(true, {}, calEvent, {start: eventDuration.start, end: eventDuration.end});
                var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
-                if(showAsSeparatedUser){
+               if(showAsSeparatedUser){
                   // we may have dragged the event on column with a new user.
                   // nice way to handle that is:
                   //  - get the newly dragged on user
@@ -1615,7 +1615,7 @@
                     }
                   }
                   newCalEvent = self._setEventUserId(newCalEvent, ((userIdList.length == 1) ? userIdList[0] : userIdList));
-                }
+               }
                self._adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent, true);
                var $weekDayColumns = self.element.find(".wc-day-column-inner");
 
