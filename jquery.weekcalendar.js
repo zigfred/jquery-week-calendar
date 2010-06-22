@@ -678,7 +678,8 @@
         }
 
         //first row
-        calendarHeaderHtml = "<table class=\"wc-header\"><tbody><tr><td class=\"wc-time-column-header\"></td>";
+        calendarHeaderHtml = "<div class=\"wc-header\">";
+				calendarHeaderHtml+=   "<table><tbody><tr><td class=\"wc-time-column-header\"></td>";
         for (var i = 1; i <= options.daysToShow; i++) {
           calendarHeaderHtml += "<td class=\"wc-day-column-header wc-day-" + i + "\""+colspan+"></td>";
         }
@@ -715,7 +716,7 @@
           calendarHeaderHtml+= "</tr>";
         }
         //close the header
-        calendarHeaderHtml += "</tbody></table>";
+        calendarHeaderHtml += "</tbody></table></div>";
 
         $(calendarHeaderHtml).appendTo($calendarContainer);
       },
