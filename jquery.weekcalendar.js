@@ -507,7 +507,15 @@
             var calendarHeight = options.height(this.element);
             var headerHeight = this.element.find(".wc-header").outerHeight();
             var navHeight = this.element.find(".wc-toolbar").outerHeight();
-            this.element.find(".wc-scrollable-grid").height(calendarHeight - navHeight - headerHeight);
+						var scrollContainerHeight = calendarHeight - navHeight - headerHeight;
+						var timeslotHeight = this.element.find(".wc-time-slots").outerHeight();
+            this.element.find(".wc-scrollable-grid").height(scrollContainerHeight);
+						if(timeslotHeight <= scrollContainerHeight){
+							this.element.find(".wc-scrollbar-shim").width(0);
+						}
+						else{
+							this.element.find(".wc-scrollbar-shim").width(16);
+						}
             this._trigger('resize', this);
          }
       },
