@@ -1220,8 +1220,8 @@
               //thanks to http://github.com/fbeauchamp/jquery-week-calendar
               var initialStart = new Date(calEvent.start);
               var initialEnd = new Date(calEvent.end);
-              var maxHour = self.options.businessHours.limitDisplay ?  self.options.businessHours.end -1 : 23;
-              var minHour = self.options.businessHours.limitDisplay ?  self.options.businessHours.start : 0;
+              var maxHour = self.options.businessHours.limitDisplay ? self.options.businessHours.end : 24;
+              var minHour = self.options.businessHours.limitDisplay ? self.options.businessHours.start : 0;
               var start = new Date(calEvent.start);
               var end = new Date(calEvent.end);
               
@@ -1234,8 +1234,8 @@
                 calEvent.end.setMonth(start.getMonth());
                 calEvent.end.setDate(start.getDate());
                 calEvent.end.setHours(maxHour);
-                calEvent.end.setMinutes(59);
-                calEvent.end.setSeconds(59);
+                calEvent.end.setMinutes(0);
+                calEvent.end.setSeconds(0);
                 $weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns);
                 
                 if ($weekDay) {
@@ -1246,6 +1246,7 @@
                 start.setDate( start.getDate() + 1);
                 start.setHours( minHour );
                 start.setMinutes( 0 );
+                start.setSeconds( 0 );
               }
               calEvent.start = start;
               calEvent.end = initialEnd;
