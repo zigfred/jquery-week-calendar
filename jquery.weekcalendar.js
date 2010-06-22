@@ -486,9 +486,7 @@
 
       // compute dynamic options based on other config values
       _computeOptions : function() {
-
          var options = this.options;
-
          if (options.businessHours.limitDisplay) {
             options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
             options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 60 * 60 * 1000;
@@ -1421,10 +1419,9 @@
          }
 
          $weekDayColumns.each(function(index, curDay) {
-            if (
-                    $(this).data("startDate").getTime() <= calEvent.start.getTime() 
-                &&  $(this).data("endDate").getTime() >= calEvent.end.getTime()
-                && ( !showAsSeparatedUser || $.inArray($(this).data("wcUserId"), user_ids) !== -1 )
+            if ( $(this).data("startDate").getTime() <= calEvent.start.getTime() &&
+                 $(this).data("endDate").getTime() >= calEvent.end.getTime() &&
+                 ( !showAsSeparatedUser || $.inArray($(this).data("wcUserId"), user_ids) !== -1 )
             ) {
                if($weekDay){
                 $weekDay = $weekDay.add($(curDay));
@@ -1700,12 +1697,10 @@
             if (hour <= self.options.businessHours.start) {
                slot = 0;
             } else if (hour >= self.options.businessHours.end) {
-               slot = self.options.businessHours.end -
-               self.options.businessHours.start - 1;
+               slot = self.options.businessHours.end - self.options.businessHours.start - 1;
             } else {
                slot = hour - self.options.businessHours.start;
             }
-            
          }
 
          var $target = this.element.find(".wc-grid-timeslot-header .wc-hour-header:eq(" + slot + ")");
