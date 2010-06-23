@@ -33,13 +33,14 @@
 	padding: 0;
 }
 
-.wc-header {
+.wc-header{
 	background: #eee;
 	border-top: 1px solid #aaa;
 	border-bottom: 1px solid #aaa;
+}
+.wc-header table{
 	width: 100%;
   table-layout:fixed;
-	background-color: #eee;	
 }
 
 .wc-header .wc-time-column-header {
@@ -88,9 +89,9 @@ table.wc-time-slots {
 	overflow: visible;
 	vertical-align: top;
 }
-.wc-scrollable-grid .wc-day-column-first{border-left: 3px double #ddd;}
 .wc-scrollable-grid .wc-day-column-last,
 .wc-scrollable-grid .wc-day-column-middle{border-left: 1px dashed #ddd;}
+.wc-scrollable-grid .wc-day-column-first{border-left: 3px double #ddd;}
 
 .wc-day-column-inner {
 	width: 100%;
