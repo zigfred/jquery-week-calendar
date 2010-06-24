@@ -150,6 +150,7 @@ table.wc-time-slots {
 
 .wc-hour-header {
 	text-align: right;
+	border-top:none !important;
 }
 
 .wc-hour-end, .wc-hour-header {
