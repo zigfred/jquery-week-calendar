@@ -82,6 +82,7 @@ table.wc-time-slots {
 	width: 100%;
 	table-layout: fixed;
 	cursor: default;
+  overflow:hidden;
 }
 
 .wc-day-column {
@@ -149,6 +150,7 @@ table.wc-time-slots {
 
 .wc-hour-header {
 	text-align: right;
+	border-top:none !important;
 }
 
 .wc-hour-end, .wc-hour-header {

@@ -9,7 +9,7 @@
 	}
 	
 	h1 {
-		margin: 0;
+		margin: 0 0 1em;
 		padding: 0.5em;
 	}
 	
@@ -78,7 +78,7 @@
 		$('#calendar').weekCalendar({
 			timeslotsPerHour: 4,
 			height: function($calendar){
-				return $(window).height() - $("h1").outerHeight();
+				return $(window).height() - $("h1").outerHeight(true);
 			},
 			eventRender : function(calEvent, $event) {
 				if(calEvent.end.getTime() < new Date().getTime()) {
