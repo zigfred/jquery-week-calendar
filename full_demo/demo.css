@@ -27,12 +27,12 @@ p {
 
 #about_button_container {
 	position: absolute;
-	top: 1em;
-	right: 1em;	
+	top: 0em;
+	right: 0em;	
 	padding: 0.5em 2em;
 	background: #ddf;
 	border: 1px solid #bbd;
-	width: 10em;
+	width: 25em;
 	text-align: center;
 }
 
@@ -76,3 +76,4 @@ ul.formatted li {
 ol.formatted li {
 	list-style-type: decimal;
 }
+#switcher{float:left;}

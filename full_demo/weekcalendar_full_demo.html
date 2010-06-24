@@ -12,6 +12,9 @@
 
 	<link rel='stylesheet' type='text/css' href='../jquery.weekcalendar.css' />
 	<link rel='stylesheet' type='text/css' href='demo.css' />
+	<link type="text/css" rel="stylesheet" href="http://jqueryui.com/themes/base/ui.all.css" />
+									
+	<link rel='stylesheet' type='text/css' href='../skins/default.css' />
 
 
 	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
@@ -20,6 +23,12 @@
     -->
     
     <script type='text/javascript' src='../libs/jquery-ui-1.8.min.js'></script>
+	<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
+  <script>
+	  $(document).ready(function(){
+	    $('#switcher').themeswitcher();
+	  });
+  </script>
 	<script type="text/javascript" src="../libs/date.js"></script>
 	<script type='text/javascript' src='../jquery.weekcalendar.js'></script>
 	<script type='text/javascript' src='demo.js'></script>
@@ -28,6 +37,7 @@
 <body> 
 	<h1>jQuery Week Calendar (full demo)</h1>
 	<div id="about_button_container">
+		<div id="switcher"></div>
 		<button type="button" id="about_button">About this demo</button>
 	</div>
 	<div id='calendar'></div>

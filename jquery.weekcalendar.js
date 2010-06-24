@@ -576,7 +576,7 @@
         var self = this;
         var options = this.options;
 
-        $calendarContainer = $("<div class=\"wc-container\">").appendTo(self.element);
+        $calendarContainer = $("<div class=\"ui-widget wc-container\">").appendTo(self.element);
 
         //render the different parts
           // nav links
@@ -604,7 +604,7 @@
         var self = this, options = this.options;
         if (options.buttons) {
            var calendarNavHtml = "\
-                <div class=\"wc-toolbar\">\
+                <div class=\"ui-widget-header wc-toolbar\">\
                   <div class=\"wc-display\">\
                   </div>\
                   <div class=\"wc-nav\">\
@@ -686,7 +686,7 @@
         }
 
         //first row
-        calendarHeaderHtml = "<div class=\"wc-header\">";
+        calendarHeaderHtml = "<div class=\"ui-widget-content wc-header\">";
 				calendarHeaderHtml+=   "<table><tbody><tr><td class=\"wc-time-column-header\"></td>";
         for (var i = 1; i <= options.daysToShow; i++) {
           calendarHeaderHtml += "<td class=\"wc-day-column-header wc-day-" + i + "\""+colspan+"></td>";
@@ -915,7 +915,7 @@
         renderRow = "<tr class=\"wc-grid-row-events\">";
         renderRow+=  "<td class=\"wc-grid-timeslot-header\">"
         for (var i = start; i < end; i++){
-          var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "wc-business-hours" : "";
+          var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "ui-state-active wc-business-hours" : "ui-state-default";
           renderRow+= "<div class=\"wc-hour-header " + bhClass + "\">";
           if (options.use24Hour){
             renderRow+= "<div class=\"wc-time-header-cell\">" + self._24HourForIndex(i) + "</div>";
