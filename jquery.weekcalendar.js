@@ -1901,7 +1901,7 @@
        */
       _cleanDate : function(d) {
          if (typeof d == 'string') {
-            return Date.parse(d) || new Date(parseInt(d));
+            return Date.parse(d) || new Date(parseInt(d, 10));
          }
          if (typeof d == 'number') {
             return new Date(d);
