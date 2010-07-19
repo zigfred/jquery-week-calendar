@@ -2348,14 +2348,19 @@
           var $toRender,
               $freeBusyPlaceHoders = self.element.find('.wc-grid-row-freebusy .wc-column-freebusy'),
               _freeBusys = self._cleanFreeBusys(freeBusys);
+
           $.each(_freeBusys, function(index, _freeBusy){
+
             var $weekdays = self._findWeekDaysForFreeBusy(_freeBusy, $freeBusyPlaceHoders);
-            $weekdays.each(function(index, day){
-              var manager = $(day).data('wcFreeBusyManager');
-              manager.insertFreeBusy(_freeBusy);
-              $(day).data('wcFreeBusyManager', manager);
-            });
-            $toRender = $toRender ? $toRender.add($weekdays) : $weekdays;
+						//if freebusy has a placeholder
+						if($weekdays.length){
+							$weekdays.each(function(index, day){
+								var manager = $(day).data('wcFreeBusyManager');
+								manager.insertFreeBusy(_freeBusy);
+								$(day).data('wcFreeBusyManager', manager);
+							});
+							$toRender = $toRender ? $toRender.add($weekdays) : $weekdays;
+						}
           });
           self._refreshFreeBusys($toRender);
         }
