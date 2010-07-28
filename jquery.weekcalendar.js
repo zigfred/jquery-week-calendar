@@ -61,7 +61,7 @@
          resizable : function(calEvent, element) {
             return true;
          },
-         eventClick : function() {
+         eventClick : function(calEvent, element, dayFreeBusyManager, calendar, clickEvent) {
          },
          eventRender : function(calEvent, element) {
             return element;
@@ -78,7 +78,7 @@
          },
          eventResize : function(calEvent, element) {
          },
-         eventNew : function(calEvent, element, dayFreeBusyManager, calendar) {
+         eventNew : function(calEvent, element, dayFreeBusyManager, calendar, mouseupEvent) {
          },
          eventMouseover : function(calEvent, $event) {
          },
