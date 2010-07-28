@@ -536,7 +536,7 @@
             var $calEvent = $target.hasClass("wc-cal-event") ? $target : $target.parents('.wc-cal-event');
             if ($calEvent.length) {
                freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data("calEvent"));
-               options.eventClick($calEvent.data("calEvent"), $calEvent, freeBusyManager, event);
+               options.eventClick($calEvent.data("calEvent"), $calEvent, freeBusyManager, self.element, event);
             }
          }).mouseover(function(event) {
             var $target = $(event.target);
@@ -1040,7 +1040,7 @@
                   self._adjustOverlappingEvents($weekDay);
                }
 
-               options.eventNew(newCalEvent, $renderedCalEvent, freeBusyManager, self.element);
+               options.eventNew(newCalEvent, $renderedCalEvent, freeBusyManager, self.element, event);
             }
          });
       },
