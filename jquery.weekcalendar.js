@@ -61,7 +61,7 @@
          resizable : function(calEvent, element) {
             return true;
          },
-         eventClick : function() {
+         eventClick : function(calEvent, element, dayFreeBusyManager, calendar, clickEvent) {
          },
          eventRender : function(calEvent, element) {
             return element;
@@ -78,7 +78,7 @@
          },
          eventResize : function(calEvent, element) {
          },
-         eventNew : function(calEvent, element, dayFreeBusyManager, calendar) {
+         eventNew : function(calEvent, element, dayFreeBusyManager, calendar, mouseupEvent) {
          },
          eventMouseover : function(calEvent, $event) {
          },
@@ -234,7 +234,8 @@
 				 * returns formatted header for day display
 				 * @param {function(date,calendar)}
 				 */
-				getHeaderDate: null
+				getHeaderDate: null,
+				preventDragOnEventCreation: false
       },
 
       /***********************
@@ -979,29 +980,31 @@
 
                $newEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
                $target.append($newEvent);
-
+							 
                var columnOffset = $target.offset().top;
                var clickY = event.pageY - columnOffset;
                var clickYRounded = (clickY - (clickY % options.timeslotHeight)) / options.timeslotHeight;
                var topPosition = clickYRounded * options.timeslotHeight;
                $newEvent.css({top: topPosition});
 
-               $target.bind("mousemove.newevent", function(event) {
-                  $newEvent.show();
-                  $newEvent.addClass("ui-resizable-resizing");
-                  var height = Math.round(event.pageY - columnOffset - topPosition);
-                  var remainder = height % options.timeslotHeight;
-                  //snap to closest timeslot
-                  if (remainder < (height / 2)) {
-                     var useHeight = height - remainder;
-                     $newEvent.css("height", useHeight < options.timeslotHeight ? options.timeslotHeight : useHeight);
-                  } else {
-                     $newEvent.css("height", height + (options.timeslotHeight - remainder));
-                  }
-               }).mouseup(function() {
-                  $target.unbind("mousemove.newevent");
-                  $newEvent.addClass("ui-corner-all");
-               });
+							 if(!options.preventDragOnEventCreation){
+								 $target.bind("mousemove.newevent", function(event) {
+										$newEvent.show();
+										$newEvent.addClass("ui-resizable-resizing");
+										var height = Math.round(event.pageY - columnOffset - topPosition);
+										var remainder = height % options.timeslotHeight;
+										//snap to closest timeslot
+										if (remainder < (height / 2)) {
+											 var useHeight = height - remainder;
+											 $newEvent.css("height", useHeight < options.timeslotHeight ? options.timeslotHeight : useHeight);
+										} else {
+											 $newEvent.css("height", height + (options.timeslotHeight - remainder));
+										}
+								 }).mouseup(function() {
+										$target.unbind("mousemove.newevent");
+										$newEvent.addClass("ui-corner-all");
+								 });
+							 }
             }
 
          }).mouseup(function(event) {
