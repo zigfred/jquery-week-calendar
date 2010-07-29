@@ -1085,6 +1085,9 @@
 						if(_currentAjaxCall){
 							//just abort current request
 							_currentAjaxCall.abort();
+							if (options.loading){
+								options.loading(false);
+							}
 						}
             var jsonOptions = self._getJsonOptions();
             jsonOptions[options.startParam || 'start'] = Math.round(weekStartDate.getTime() / 1000);
@@ -1098,12 +1101,12 @@
               },
               success: function(data) {
                  self._renderEvents(data, $weekDayColumns);
-                 if (options.loading){
-									options.loading(false);
-								}
               },
 							complete: function(){
 								_currentAjaxCall = null;
+                if (options.loading){
+									options.loading(false);
+								}
 							}
             });
          }
