@@ -16,6 +16,7 @@
  */
 
 (function($) {
+	var _currentAjaxCall;
 
    $.widget("ui.weekCalendar", {
       options: {
@@ -1078,11 +1079,17 @@
 
          //load events by chosen means
          if (typeof options.data == 'string') {
-            if (options.loading) options.loading(true);
+            if (options.loading){
+							options.loading(true);
+						}
+						if(_currentAjaxCall){
+							//just abort current request
+							_currentAjaxCall.abort();
+						}
             var jsonOptions = self._getJsonOptions();
             jsonOptions[options.startParam || 'start'] = Math.round(weekStartDate.getTime() / 1000);
             jsonOptions[options.endParam || 'end'] = Math.round(weekEndDate.getTime() / 1000);
-            $.ajax({
+            _currentAjaxCall = $.ajax({
               url: options.data, 
               data: jsonOptions, 
               dataType: 'json',
@@ -1091,8 +1098,13 @@
               },
               success: function(data) {
                  self._renderEvents(data, $weekDayColumns);
-                 if (options.loading) options.loading(false);
-              }
+                 if (options.loading){
+									options.loading(false);
+								}
+              },
+							complete: function(){
+								_currentAjaxCall = null;
+							}
             });
          }
          else if ($.isFunction(options.data)) {
