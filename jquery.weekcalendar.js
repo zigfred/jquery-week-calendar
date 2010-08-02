@@ -26,6 +26,7 @@
          alwaysDisplayTimeMinutes: true,
          use24Hour : false,
          daysToShow : 7,
+				 minBodyHeight: 100,
          firstDayOfWeek : function(calendar){
                       if($(calendar).weekCalendar('option', 'daysToShow') != 5){
                         return 0;
@@ -509,7 +510,7 @@
             var calendarHeight = options.height(this.element);
             var headerHeight = this.element.find(".wc-header").outerHeight();
             var navHeight = this.element.find(".wc-toolbar").outerHeight();
-						var scrollContainerHeight = calendarHeight - navHeight - headerHeight;
+						var scrollContainerHeight = Math.max(calendarHeight - navHeight - headerHeight, option.minBodyHeight);
 						var timeslotHeight = this.element.find(".wc-time-slots").outerHeight();
             this.element.find(".wc-scrollable-grid").height(scrollContainerHeight);
 						if(timeslotHeight <= scrollContainerHeight){
@@ -664,7 +665,7 @@
                     });
              $container.find('input').change(function(){
                   self.setDaysToShow(parseInt($(this).val(), 10));
-                })
+                });
            }
            $calendarContainer.find(".wc-nav, .wc-display").buttonset();
            var _height = $calendarContainer.find(".wc-nav").outerHeight();
