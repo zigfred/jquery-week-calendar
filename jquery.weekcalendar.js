@@ -510,7 +510,7 @@
             var calendarHeight = options.height(this.element);
             var headerHeight = this.element.find(".wc-header").outerHeight();
             var navHeight = this.element.find(".wc-toolbar").outerHeight();
-						var scrollContainerHeight = Math.max(calendarHeight - navHeight - headerHeight, option.minBodyHeight);
+						var scrollContainerHeight = Math.max(calendarHeight - navHeight - headerHeight, options.minBodyHeight);
 						var timeslotHeight = this.element.find(".wc-time-slots").outerHeight();
             this.element.find(".wc-scrollable-grid").height(scrollContainerHeight);
 						if(timeslotHeight <= scrollContainerHeight){
