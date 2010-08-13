@@ -428,9 +428,10 @@
       },
 
       serializeEvents: function(){
+        var self = this;
         var calEvents = [];
 
-        $("#calendar").find(".wc-cal-event").each(function(){
+        self.element.find(".wc-cal-event").each(function () {
             calEvents.push($(this).data("calEvent"));
         }); 
         return calEvents;
