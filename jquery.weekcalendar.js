@@ -891,7 +891,7 @@
                 for(var j = 0; j< uLength; j++){
                    renderRow+= "<td class=\"wc-day-column day-" + i + "\">";
                    renderRow+=   "<div class=\"wc-no-height-wrapper wc-freebusy-wrapper\">";
-                   renderRow+=     "<div class=\"wc-full-height-column wc-column-freebusy wc-day-" + i 
+                   renderRow+=     "<div class=\"wc-full-height-column wc-column-freebusy wc-day-" + i;
                    renderRow+=                     " wc-user-" + self._getUserIdFromIndex(j) + "\">";
                    renderRow+=     "</div>";
                    renderRow+=   "</div>";
@@ -917,7 +917,7 @@
             start = ( options.businessHours.limitDisplay ? options.businessHours.start : 0 ),
             end   = ( options.businessHours.limitDisplay ? options.businessHours.end : 24 );
         renderRow = "<tr class=\"wc-grid-row-events\">";
-        renderRow+=  "<td class=\"wc-grid-timeslot-header\">"
+        renderRow+=  "<td class=\"wc-grid-timeslot-header\">";
         for (var i = start; i < end; i++){
           var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "ui-state-active wc-business-hours" : "ui-state-default";
           renderRow+= "<div class=\"wc-hour-header " + bhClass + "\">";
@@ -956,7 +956,7 @@
 								columnclass=columnclass.join(' ');
 							}
               renderRow+= "<td class=\"wc-day-column " + columnclass + " day-" + i + "\">";
-              renderRow+=   "<div class=\"wc-full-height-column wc-day-column-inner day-" + i 
+              renderRow+=   "<div class=\"wc-full-height-column wc-day-column-inner day-" + i;
               renderRow+=      " wc-user-" + self._getUserIdFromIndex(j) + "\">";
               renderRow+=   "</div>";
               renderRow+= "</td>";
@@ -1196,7 +1196,7 @@
                 _end = self._dateLastDayOfWeek(self._cloneDate(self.element.data("startDate"))),
                 _title = this.options.title;
             _title = _title.split('%start%').join(self._formatDate(_start , options.dateFormat));
-            _title = _title.split('%end%').join(self._formatDate(_end , options.dateFormat))
+            _title = _title.split('%end%').join(self._formatDate(_end , options.dateFormat));
             _title = _title.split('%date%').join(self._formatDate(_date , options.dateFormat));
             $('.wc-toolbar .wc-title', self.element).html(_title);
          }
@@ -2590,7 +2590,7 @@
           var start = freeBusy.getStart(), end = freeBusy.getEnd(),
               startIndex=0, endIndex = this.freeBusys.length - 1,
               newFreeBusys = [];
-          var pushNewFreeBusy = function(_f){if(_f.isValid()) newFreeBusys.push(_f);}
+          var pushNewFreeBusy = function(_f){if(_f.isValid()) newFreeBusys.push(_f);};
 
           $.each(this.freeBusys, function(index){
             //within the loop, we have following vars:
