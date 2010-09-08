@@ -18,6 +18,12 @@
 .wc-toolbar .wc-display{
   float: right;
 }
+
+.wc-toolbar button {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
 .wc-toolbar .wc-title{
   text-align:center;
   padding:0;
