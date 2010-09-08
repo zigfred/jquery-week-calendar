@@ -2125,10 +2125,13 @@
       _getEventUserId: function(calEvent){
          var self = this;
          var options = this.options;
-          if($.isFunction(options.getEventUserId)){
+				 if( options.showAsSeparateUsers && options.users && options.users.length ){
+					 if($.isFunction(options.getEventUserId)){
             return options.getEventUserId(calEvent, self.element);
-          }
-        return calEvent.userId;
+					 }
+					 return calEvent.userId;
+				 }
+				 return [];
       },
       /**
        * sets the event user id on given calEvent
