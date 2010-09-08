@@ -997,7 +997,7 @@
 										var height = Math.round(event.pageY - columnOffset - topPosition);
 										var remainder = height % options.timeslotHeight;
 										//snap to closest timeslot
-										if (remainder < (height / 2)) {
+										if (remainder < 0) {
 											 var useHeight = height - remainder;
 											 $newEvent.css("height", useHeight < options.timeslotHeight ? options.timeslotHeight : useHeight);
 										} else {
@@ -1697,6 +1697,7 @@
                }, 500);
             }
          });
+         $('.ui-resizable-handle', $calEvent).html('=');
       },
 
       /*
