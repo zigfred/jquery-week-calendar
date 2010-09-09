@@ -11,6 +11,7 @@ $(document).ready(function() {
       firstDayOfWeek : 1,
       businessHours :{start: 8, end: 18, limitDisplay: true },
       daysToShow : 7,
+      switchDisplay: {'1 day': 1, '3 next days': 3, 'work week': 5, 'full week': 7},
       height : function($calendar) {
          return $(window).height() - $("h1").outerHeight() - 1;
       },
@@ -202,6 +203,9 @@ $(document).ready(function() {
     */
    function setupStartAndEndTimeFields($startTimeField, $endTimeField, calEvent, timeslotTimes) {
 
+      $startTimeField.empty();
+      $endTimeField.empty();
+
       for (var i = 0; i < timeslotTimes.length; i++) {
          var startTime = timeslotTimes[i].start;
          var endTime = timeslotTimes[i].end;
@@ -216,6 +220,9 @@ $(document).ready(function() {
          $startTimeField.append("<option value=\"" + startTime + "\" " + startSelected + ">" + timeslotTimes[i].startFormatted + "</option>");
          $endTimeField.append("<option value=\"" + endTime + "\" " + endSelected + ">" + timeslotTimes[i].endFormatted + "</option>");
 
+         $timestampsOfOptions.start[timeslotTimes[i].startFormatted] = startTime.getTime();
+         $timestampsOfOptions.end[timeslotTimes[i].endFormatted] = endTime.getTime();
+
       }
       $endTimeOptions = $endTimeField.find("option");
       $startTimeField.trigger("change");
@@ -223,14 +230,15 @@ $(document).ready(function() {
 
    var $endTimeField = $("select[name='end']");
    var $endTimeOptions = $endTimeField.find("option");
+   var $timestampsOfOptions = {start:[],end:[]};
 
    //reduces the end time options to be only after the start time options.
    $("select[name='start']").change(function() {
-      var startTime = $(this).find(":selected").val();
+      var startTime = $timestampsOfOptions.start[$(this).find(":selected").text()];
       var currentEndTime = $endTimeField.find("option:selected").val();
       $endTimeField.html(
             $endTimeOptions.filter(function() {
-               return startTime < $(this).val();
+               return startTime < $timestampsOfOptions.end[$(this).text()];
             })
             );
 
