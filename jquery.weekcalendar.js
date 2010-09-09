@@ -1218,7 +1218,7 @@
             var _date = this.options.date,
                 _start = self._cloneDate(self.element.data("startDate")),
                 _end = self._dateLastDayOfWeek(new Date(this._cloneDate(self.element.data("endDate")).getTime() - (MILLIS_IN_DAY))),
-                _title = this._getCalendarTitle();
+                _title = this.options.title;
             _title = _title.split('%start%').join(self._formatDate(_start , options.dateFormat));
             _title = _title.split('%end%').join(self._formatDate(_end , options.dateFormat));
             _title = _title.split('%date%').join(self._formatDate(_date , options.dateFormat));
