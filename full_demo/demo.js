@@ -12,6 +12,9 @@ $(document).ready(function() {
       businessHours :{start: 8, end: 18, limitDisplay: true },
       daysToShow : 7,
       switchDisplay: {'1 day': 1, '3 next days': 3, 'work week': 5, 'full week': 7},
+      title: function(daysToShow) {
+			return daysToShow == 1 ? '%date%' : '%start% - %end%';
+      },
       height : function($calendar) {
          return $(window).height() - $("h1").outerHeight() - 1;
       },
