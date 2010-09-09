@@ -18,6 +18,12 @@
 .wc-toolbar .wc-display{
   float: right;
 }
+
+.wc-toolbar button {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
 .wc-toolbar .wc-title{
   text-align:center;
   padding:0;
@@ -208,9 +214,8 @@ table.wc-time-slots {
 }
 
 
-.wc-cal-event div {
-	padding: 0 5px;
-	
+.wc-cal-event.ui-resizable-resizing {
+	cursor: s-resize;
 }
 
 .wc-cal-event .wc-time {
@@ -231,7 +236,9 @@ table.wc-time-slots {
 
 .wc-container .ui-resizable-s {
 	height: 10px;
-	bottom: -8px;	
+	line-height: 10px;
+	bottom: -2px;
+	font-size: .75em;
 }
 
 
