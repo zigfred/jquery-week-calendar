@@ -1616,7 +1616,7 @@
          var options = this.options;
          $calEvent.draggable({
             handle : ".wc-time",
-            containment: ".wc-scrollable-grid",
+            containment: "div.wc-time-slots",
             snap: '.wc-day-column-inner',
             snapMode: 'inner',
             snapTolerance: options.timeslotHeight - 1,
