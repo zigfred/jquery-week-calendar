@@ -508,7 +508,7 @@
          var options = this.options;
          if (options.businessHours.limitDisplay) {
             options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
-            options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 60 * 60 * 1000;
+            options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 3600000; // 60 * 60 * 1000
             options.millisPerTimeslot = options.millisToDisplay / options.timeslotsPerDay;
          } else {
             options.timeslotsPerDay = options.timeslotsPerHour * 24;
@@ -697,7 +697,7 @@
       _renderCalendarHeader: function($calendarContainer){
         var self = this, options = this.options,
             showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
-            rowspan="", colspan, calendarHeaderHtml;
+            rowspan="", colspan = '', calendarHeaderHtml;
 
         if(showAsSeparatedUser){
           rowspan = " rowspan=\"2\"";
