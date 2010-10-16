@@ -1296,7 +1296,7 @@
                 start.setMinutes( 0 );
                 start.setSeconds( 0 );
               }
-              if ( start < initialEnd ) {
+              if ( start <= initialEnd ) {
                 calEvent.start = start;
                 calEvent.end = initialEnd;
                 if ( ($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
@@ -1530,7 +1530,8 @@
          var eventMillis = calEvent.end.getTime() - calEvent.start.getTime();
          var pxTop = pxPerMillis * startMillis;
          var pxHeight = pxPerMillis * eventMillis;
-         $calEvent.css({top: pxTop, height: pxHeight});
+         //var pxHeightFallback = pxPerMillis * (60 / options.timeslotsPerHour) * 60 * 1000;
+			$calEvent.css({top: pxTop, height: pxHeight || (pxPerMillis * 3600000 / options.timeslotsPerHour)});
       },
 
       /*
@@ -1722,7 +1723,7 @@
                }, 500);
             }
          });
-         $('.ui-resizable-handle', $calEvent).html('=');
+         $('.ui-resizable-handle', $calEvent).text('=');
       },
 
       /*
