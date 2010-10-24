@@ -2077,8 +2077,8 @@
       
       /* USER MANAGEMENT FUNCTIONS */
 
-      getUserForId: function(id, user){
-        $.extend(user, this.options.users[this._getUserIndexFromId(id)]);
+      getUserForId: function(id){
+        return $.extend({}, this.options.users[this._getUserIndexFromId(id)]);
       },
 
       /**
