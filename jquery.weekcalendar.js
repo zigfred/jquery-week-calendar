@@ -1286,6 +1286,7 @@
               var start = new Date(initialStart);
               var endDay = initialEnd.getDay();
               var $weekDay;
+              var isMultiday = false;
 
               while( start.getDay() < endDay ){
                 calEvent.start = start;
@@ -1304,11 +1305,12 @@
                 start.setHours( minHour );
                 start.setMinutes( 0 );
                 start.setSeconds( 0 );
+                isMultiday = true;
               }
               if ( start <= initialEnd ) {
                 calEvent.start = start;
                 calEvent.end = initialEnd;
-                if ( ($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
+                if ( ((isMultiday && calEvent.start.getTime() != calEvent.end.getTime()) || !isMultiday) && ($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
                   self._renderEvent(calEvent, $weekDay);
                 }
               }
