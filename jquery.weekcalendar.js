@@ -45,6 +45,8 @@
          timeslotHeight: 20,
          defaultEventLength : 2,
          timeslotsPerHour : 4,
+         minDate: null,
+         maxDate: null,
          buttons : true,
          buttonText : {
             today : "today",
@@ -443,6 +445,12 @@
         }
         var newDate = new Date(this.element.data("startDate").getTime());
         newDate.setDate(newDate.getDate() + this.options.daysToShow);
+			if (this.options.maxDate !== null) {
+				var maxDate = this._cleanDate(this.options.maxDate);
+				maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
+				if (newDate.getTime() > maxDate.getTime())
+					newDate = maxDate;
+			}
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -453,6 +461,11 @@
         }
         var newDate = new Date(this.element.data("startDate").getTime());
         newDate.setDate(newDate.getDate() - this.options.daysToShow);
+			if (this.options.minDate !== null) {
+				var minDate = this._cleanDate(this.options.minDate);
+				if (newDate.getTime() < minDate.getTime())
+					newDate = minDate;
+			}
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -1133,7 +1146,7 @@
       _updateDayColumnHeader : function ($weekDayColumns) {
          var self = this;
          var options = this.options;
-         var currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
+         var currentDay = self._cloneDate(self.element.data("startDate"));
          var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
 
          self.element.find(".wc-header td.wc-day-column-header").each(function(i, val) {
@@ -1147,7 +1160,7 @@
 
          });
 
-         currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
+         currentDay = self._cloneDate(self.element.data("startDate"));
 				 if(showAsSeparatedUser)
 				 {
 						self.element.find('.wc-header td.wc-user-header').each(function(i, val){
@@ -1160,7 +1173,7 @@
 						});
 				 }
 
-         currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
+         currentDay = self._cloneDate(self.element.data("startDate"));
 
          $weekDayColumns.each(function(i, val) {
 
@@ -1179,7 +1192,7 @@
 
          //now update the freeBusy placeholders
          if(options.displayFreeBusys){
-            currentDay = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate")));
+            currentDay = self._cloneDate(self.element.data("startDate"));
             self.element.find('.wc-grid-row-freebusy .wc-column-freebusy').each(function(i, val){
               $(this).data("startDate", self._cloneDate(currentDay));
               $(this).data("endDate", new Date(currentDay.getTime() + (MILLIS_IN_DAY)));
@@ -1192,8 +1205,8 @@
          //now update the calendar title
          if(this.options.title && this.options.title.length){
             var _date = this.options.date,
-                _start = self._dateFirstDayOfWeek(self._cloneDate(self.element.data("startDate"))),
-                _end = self._dateLastDayOfWeek(self._cloneDate(self.element.data("startDate"))),
+                _start = self._cloneDate(self.element.data("startDate")),
+                _end = self._dateLastDayOfWeek(new Date(this._cloneDate(self.element.data("endDate")).getTime() - (MILLIS_IN_DAY))),
                 _title = this.options.title;
             _title = _title.split('%start%').join(self._formatDate(_start , options.dateFormat));
             _title = _title.split('%end%').join(self._formatDate(_end , options.dateFormat));
@@ -1837,6 +1850,19 @@
          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
          var adjustedDate = new Date(midnightCurrentDate);
          adjustedDate.setDate(adjustedDate.getDate() - self._getAdjustedDayIndex(midnightCurrentDate));
+
+			if (this.options.minDate !== null) {
+				var minDate = this._cleanDate(this.options.minDate);
+				if (adjustedDate.getTime() < minDate.getTime())
+					adjustedDate = minDate;
+			}
+			if (this.options.maxDate !== null) {
+				var maxDate = this._cleanDate(this.options.maxDate);
+				maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
+				if (adjustedDate.getTime() > maxDate.getTime())
+					adjustedDate = maxDate;
+			}
+
          return adjustedDate;
        },
 
@@ -1849,6 +1875,19 @@
          var adjustedDate = new Date(midnightCurrentDate);
          var daysToAdd = (self.options.daysToShow - 1 - self._getAdjustedDayIndex(midnightCurrentDate));
          adjustedDate.setDate(adjustedDate.getDate() + daysToAdd );
+
+			if (this.options.minDate !== null) {
+				var minDate = this._cleanDate(this.options.minDate);
+				minDate.setDate(minDate.getDate() + this.options.daysToShow - 1);
+				if (adjustedDate.getTime() < minDate.getTime())
+					adjustedDate = minDate;
+			}
+			if (this.options.maxDate !== null) {
+				var maxDate = this._cleanDate(this.options.maxDate);
+				if (adjustedDate.getTime() > maxDate.getTime())
+					adjustedDate = maxDate;
+			}
+
          return adjustedDate;
       },
 
