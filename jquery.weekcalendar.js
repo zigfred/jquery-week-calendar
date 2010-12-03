@@ -303,7 +303,7 @@
        */
       nextWeek : function() {
          //add 8 days to be sure of being in prev week - allows for daylight savings or other anomolies
-         var newDate = new Date(this.element.data("startDate").getTime() + MILLIS_IN_WEEK + (MILLIS_IN_WEEK / 7));
+         var newDate = new Date(this.element.data("startDate").getTime() + MILLIS_IN_WEEK + MILLIS_IN_DAY);
          this._clearCalendar();
          this._loadCalEvents(newDate);
       },
@@ -1526,8 +1526,8 @@
          var calEvent = $calEvent.data("calEvent");
          var pxPerMillis = $weekDay.height() / options.millisToDisplay;
          var firstHourDisplayed = options.businessHours.limitDisplay ? options.businessHours.start : 0;
-         var startMillis = calEvent.start.getTime() - new Date(calEvent.start.getFullYear(), calEvent.start.getMonth(), calEvent.start.getDate(), firstHourDisplayed).getTime();
-         var eventMillis = calEvent.end.getTime() - calEvent.start.getTime();
+         var startMillis = this._getDSTdayShift(calEvent.start).getTime() - this._getDSTdayShift(new Date(calEvent.start.getFullYear(), calEvent.start.getMonth(), calEvent.start.getDate(), firstHourDisplayed)).getTime();
+         var eventMillis = this._getDSTdayShift(calEvent.end).getTime() - this._getDSTdayShift(calEvent.start).getTime();
          var pxTop = pxPerMillis * startMillis;
          var pxHeight = pxPerMillis * eventMillis;
          //var pxHeightFallback = pxPerMillis * (60 / options.timeslotsPerHour) * 60 * 1000;
@@ -1541,10 +1541,10 @@
        */
       _getEventDurationFromPositionedEventElement : function($weekDay, $calEvent, top) {
          var options = this.options;
-         var startOffsetMillis = options.businessHours.limitDisplay ? options.businessHours.start * 60 * 60 * 1000 : 0;
+         var startOffsetMillis = options.businessHours.limitDisplay ? options.businessHours.start * 3600000 : 0;
          var start = new Date($weekDay.data("startDate").getTime() + startOffsetMillis + Math.round(top / options.timeslotHeight) * options.millisPerTimeslot);
          var end = new Date(start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
-         return {start: start, end: end};
+         return {start: this._getDSTdayShift(start, -1), end: this._getDSTdayShift(end, -1)};
       },
 
       /*
@@ -1709,6 +1709,8 @@
             stop :function(event, ui) {
                var $calEvent = ui.element;
                var newEnd = new Date($calEvent.data("calEvent").start.getTime() + Math.max(1,Math.round(ui.size.height / options.timeslotHeight)) * options.millisPerTimeslot);
+               if (self._needDSTdayShift($calEvent.data("calEvent").start, newEnd))
+						newEnd = self._getDSTdayShift(newEnd, -1);
                var newCalEvent = $.extend(true, {}, calEvent, {start: calEvent.start, end: newEnd});
                self._adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent);
 
@@ -2415,9 +2417,25 @@
 				}
 				var dayName = options.useShortDayNames ? options.shortDays[date.getDay()] : options.longDays[date.getDay()];
 				return dayName + (options.headerSeparator) + this._formatDate(date, options.dateFormat);
-			}
+			},
 
 
+
+      /**
+       * returns corrected date related to DST problem
+       */
+      _getDSTdayShift : function(date, shift) {
+			var start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0);
+			var offset1 = start.getTimezoneOffset();
+			var offset2 = date.getTimezoneOffset();
+         if (offset1 == offset2)
+				return date;
+			shift = shift ? shift : 1;
+			return new Date(date.getTime() - shift * (offset1 > offset2 ? -1 : 1) * (Math.max(offset1, offset2) - Math.min(offset1, offset2)) * 60000);
+      },
+      _needDSTdayShift : function(date1, date2) {
+			return date1.getTimezoneOffset() != date2.getTimezoneOffset();
+      }
       
 
 
