@@ -1269,6 +1269,7 @@
          }
          this._clearCalendar();
 
+
          if ($.isArray(data)) {
             eventsToRender = self._cleanEvents(data);
          } else if (data.events) {
