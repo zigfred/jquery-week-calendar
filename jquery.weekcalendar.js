@@ -241,7 +241,12 @@
 				 * @param {function(date,calendar)}
 				 */
 				getHeaderDate: null,
-				preventDragOnEventCreation: false
+				preventDragOnEventCreation: false,
+				/**
+				 * the event on which to bind calendar resize
+				 * @param {string}
+				 */
+				resizeEvent: 'resize.weekcalendar'
       },
 
       /***********************
@@ -256,10 +261,12 @@
          self._resizeCalendar();
          self._scrollToHour(self.options.date.getHours(), true);
 
-         $(window).unbind("resize.weekcalendar");
-         $(window).bind("resize.weekcalendar", function() {
-            self._resizeCalendar();
-         });
+				 if(this.options.resizeEvent){
+					 $(window).unbind(this.options.resizeEvent);
+					 $(window).bind(this.options.resizeEvent, function() {
+							self._resizeCalendar();
+					 });
+				}
 
       },
 
@@ -337,10 +344,12 @@
          self._resizeCalendar();
          self._scrollToHour(hour, false);
 
-         $(window).unbind("resize.weekcalendar");
-         $(window).bind("resize.weekcalendar", function() {
-            self._resizeCalendar();
-         });
+				 if(this.options.resizeEvent){
+					 $(window).unbind(this.options.resizeEvent);
+					 $(window).bind(this.options.resizeEvent, function() {
+							self._resizeCalendar();
+					 });
+				}
       },
 
       /*
