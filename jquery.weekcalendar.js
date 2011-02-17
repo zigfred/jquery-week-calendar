@@ -16,6 +16,9 @@
  */
 
 (function($) {
+  // check the jquery version
+  var _v = $.fn.jquery.split('.'),
+      _jQuery14OrLower = (10 * _v[0] + _v[1]) < 15;
 
     $.widget('ui.weekCalendar', (function() {
       var _currentAjaxCall;
@@ -1103,10 +1106,19 @@
               options.loading(true);
             }
             if (_currentAjaxCall) {
-              //just abort current request
-              _currentAjaxCall.abort();
-              if (options.loading) {
-                options.loading(false);
+              // first abort current request.
+              if (!_jQuery14OrLower) {
+                _currentAjaxCall.abort();
+              } else {
+                // due to the fact that jquery 1.4 does not detect a request was
+                // aborted, we need to replace the onreadystatechange and 
+                // execute the "complete" callback.
+                _currentAjaxCall.onreadystatechange = null;
+                _currentAjaxCall.abort();
+                _currentAjaxCall = null
+                if (options.loading) {
+                  options.loading(false);
+                }
               }
             }
             var jsonOptions = self._getJsonOptions();
@@ -1117,10 +1129,15 @@
               data: jsonOptions,
               dataType: 'json',
               error: function(XMLHttpRequest, textStatus, errorThrown) {
-                alert('unable to get data, error:' + textStatus);
+                // only prevent error with jQuery 1.5
+                // see issue #34. thanks to dapplebeforedawn
+                // (https://github.com/themouette/jquery-week-calendar/issues#issue/34)
+                if(errorThrown != 'abort'){
+                  alert('unable to get data, error:' + textStatus);
+                }
               },
               success: function(data) {
-                  self._renderEvents(data, $weekDayColumns);
+                self._renderEvents(data, $weekDayColumns);
               },
               complete: function() {
                 _currentAjaxCall = null;
@@ -1129,6 +1146,7 @@
                 }
               }
             });
+            console.log(_currentAjaxCall);
           }
           else if ($.isFunction(options.data)) {
             options.data(weekStartDate, weekEndDate,
@@ -1823,8 +1841,8 @@
       },
 
       /*
-        * Clean events to ensure correct format
-        */
+       * Clean events to ensure correct format
+       */
       _cleanEvents: function(events) {
           var self = this;
           $.each(events, function(i, event) {
@@ -1834,8 +1852,8 @@
       },
 
       /*
-        * Clean specific event
-        */
+       * Clean specific event
+       */
       _cleanEvent: function(event) {
           if (event.date) {
             event.start = event.date;
@@ -1848,8 +1866,8 @@
       },
 
       /*
-        * Disable text selection of the elements in different browsers
-        */
+       * Disable text selection of the elements in different browsers
+       */
       _disableTextSelect: function($elements) {
           $elements.each(function() {
             if ($.browser.mozilla) {//Firefox
@@ -1988,7 +2006,12 @@
         */
       _cleanDate: function(d) {
           if (typeof d == 'string') {
-            return Date.parse(d) || new Date(parseInt(d, 10));
+            // if is numeric
+            if (!isNaN(parseFloat(d)) && isFinite()) {
+              return this._cleanDate(parseInt(d, 10))
+            }
+            // this is a human readable date
+            return Date.parse(d) || new Date(d);
           }
           if (typeof d == 'number') {
             return new Date(d);
