@@ -534,7 +534,7 @@
           else {
             this.element.find('.wc-scrollbar-shim').width(16);
           }
-          this._trigger('resize', this);
+          this._trigger('resize', this.element);
         }
       },
 
