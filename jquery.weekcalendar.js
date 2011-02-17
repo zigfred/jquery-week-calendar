@@ -487,11 +487,6 @@
       getCurrentLastDay: function() {
         return this._addDays(this.getCurrentFirstDay(), this.options.daysToShow - 1);
       },
-/*
-      getData : function(key) {
-          return this._getData(key);
-      },
-*/
 
       /*********************
         * private functions *
