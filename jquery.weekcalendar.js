@@ -460,17 +460,7 @@
         }
         var newDate = new Date(this.element.data('startDate').getTime());
         newDate.setDate(newDate.getDate() + this.options.daysToShow);
-        /*
-         * this part is deprecated as the dates are now 
-         * filtered on the loadCalEvents
 
-        if (this.options.maxDate !== null) {
-          var maxDate = this._cleanDate(this.options.maxDate);
-          maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
-          if (newDate.getTime() > maxDate.getTime())
-            newDate = maxDate;
-        }
-        */
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -481,16 +471,7 @@
         }
         var newDate = new Date(this.element.data('startDate').getTime());
         newDate.setDate(newDate.getDate() - this.options.daysToShow);
-        /*
-         * this part is deprecated as the dates are now 
-         * filtered on the loadCalEvents
 
-        if (this.options.minDate !== null) {
-          var minDate = this._cleanDate(this.options.minDate);
-          if (newDate.getTime() < minDate.getTime())
-            newDate = minDate;
-        }
-        */
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -1905,22 +1886,7 @@
         var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         var adjustedDate = new Date(midnightCurrentDate);
         adjustedDate.setDate(adjustedDate.getDate() - self._getAdjustedDayIndex(midnightCurrentDate));
-        /*
-         * this part is deprecated as the dates are now 
-         * filtered on the loadCalEvents
 
-        if (this.options.minDate !== null) {
-          var minDate = this._cleanDate(this.options.minDate);
-          if (adjustedDate.getTime() < minDate.getTime())
-            adjustedDate = minDate;
-        }
-        if (this.options.maxDate !== null) {
-          var maxDate = this._cleanDate(this.options.maxDate);
-          maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
-          if (adjustedDate.getTime() > maxDate.getTime())
-            adjustedDate = maxDate;
-        }
-        */
         return adjustedDate;
       },
 
@@ -1933,23 +1899,6 @@
         var adjustedDate = new Date(midnightCurrentDate);
         var daysToAdd = (self.options.daysToShow - 1 - self._getAdjustedDayIndex(midnightCurrentDate));
         adjustedDate.setDate(adjustedDate.getDate() + daysToAdd);
-
-        /*
-         * this part is deprecated as the dates are now 
-         * filtered on the loadCalEvents
-
-        if (this.options.minDate !== null) {
-          var minDate = this._cleanDate(this.options.minDate);
-          minDate.setDate(minDate.getDate() + this.options.daysToShow - 1);
-          if (adjustedDate.getTime() < minDate.getTime())
-            adjustedDate = minDate;
-        }
-        if (this.options.maxDate !== null) {
-          var maxDate = this._cleanDate(this.options.maxDate);
-          if (adjustedDate.getTime() > maxDate.getTime())
-            adjustedDate = maxDate;
-        }
-        */
 
         return adjustedDate;
       },
