@@ -446,7 +446,7 @@
         var calEvents = [];
 
         self.element.find('.wc-cal-event').each(function() {
-            calEvents.push($(this).data('calEvent'));
+          calEvents.push($(this).data('calEvent'));
         });
         return calEvents;
       },
@@ -457,12 +457,12 @@
         }
         var newDate = new Date(this.element.data('startDate').getTime());
         newDate.setDate(newDate.getDate() + this.options.daysToShow);
-      if (this.options.maxDate !== null) {
-        var maxDate = this._cleanDate(this.options.maxDate);
-        maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
-        if (newDate.getTime() > maxDate.getTime())
-          newDate = maxDate;
-      }
+        if (this.options.maxDate !== null) {
+          var maxDate = this._cleanDate(this.options.maxDate);
+          maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
+          if (newDate.getTime() > maxDate.getTime())
+            newDate = maxDate;
+        }
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -473,11 +473,11 @@
         }
         var newDate = new Date(this.element.data('startDate').getTime());
         newDate.setDate(newDate.getDate() - this.options.daysToShow);
-      if (this.options.minDate !== null) {
-        var minDate = this._cleanDate(this.options.minDate);
-        if (newDate.getTime() < minDate.getTime())
-          newDate = minDate;
-      }
+        if (this.options.minDate !== null) {
+          var minDate = this._cleanDate(this.options.minDate);
+          if (newDate.getTime() < minDate.getTime())
+            newDate = minDate;
+        }
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -492,56 +492,56 @@
         * private functions *
         *********************/
       _setOption: function(key, value) {
-          var self = this;
-          if (self.options[key] != value) {
-            // this could be made more efficient at some stage by caching the
-            // events array locally in a store but this should be done in conjunction
-            // with a proper binding model.
+        var self = this;
+        if (self.options[key] != value) {
+          // this could be made more efficient at some stage by caching the
+          // events array locally in a store but this should be done in conjunction
+          // with a proper binding model.
 
-            var currentEvents = $.map(self.element.find('.wc-cal-event'), function() {
-                return $(this).data('calEvent');
-            });
+          var currentEvents = $.map(self.element.find('.wc-cal-event'), function() {
+            return $(this).data('calEvent');
+          });
 
-            var newOptions = {};
-            newOptions[key] = value;
-            self._renderEvents({events: currentEvents, options: newOptions}, self.element.find('.wc-day-column-inner'));
+          var newOptions = {};
+          newOptions[key] = value;
+          self._renderEvents({events: currentEvents, options: newOptions}, self.element.find('.wc-day-column-inner'));
         }
       },
 
       // compute dynamic options based on other config values
       _computeOptions: function() {
-          var options = this.options;
-          if (options.businessHours.limitDisplay) {
-            options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
-            options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 3600000; // 60 * 60 * 1000
-            options.millisPerTimeslot = options.millisToDisplay / options.timeslotsPerDay;
-          } else {
-            options.timeslotsPerDay = options.timeslotsPerHour * 24;
-            options.millisToDisplay = MILLIS_IN_DAY;
-            options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
-          }
+        var options = this.options;
+        if (options.businessHours.limitDisplay) {
+          options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
+          options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 3600000; // 60 * 60 * 1000
+          options.millisPerTimeslot = options.millisToDisplay / options.timeslotsPerDay;
+        } else {
+          options.timeslotsPerDay = options.timeslotsPerHour * 24;
+          options.millisToDisplay = MILLIS_IN_DAY;
+          options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
+        }
       },
 
       /*
         * Resize the calendar scrollable height based on the provided function in options.
         */
       _resizeCalendar: function() {
-          var options = this.options;
-          if (options && $.isFunction(options.height)) {
-            var calendarHeight = options.height(this.element);
-            var headerHeight = this.element.find('.wc-header').outerHeight();
-            var navHeight = this.element.find('.wc-toolbar').outerHeight();
-            var scrollContainerHeight = Math.max(calendarHeight - navHeight - headerHeight, options.minBodyHeight);
-            var timeslotHeight = this.element.find('.wc-time-slots').outerHeight();
-            this.element.find('.wc-scrollable-grid').height(scrollContainerHeight);
-            if (timeslotHeight <= scrollContainerHeight) {
-              this.element.find('.wc-scrollbar-shim').width(0);
-            }
-            else {
-              this.element.find('.wc-scrollbar-shim').width(16);
-            }
-            this._trigger('resize', this);
+        var options = this.options;
+        if (options && $.isFunction(options.height)) {
+          var calendarHeight = options.height(this.element);
+          var headerHeight = this.element.find('.wc-header').outerHeight();
+          var navHeight = this.element.find('.wc-toolbar').outerHeight();
+          var scrollContainerHeight = Math.max(calendarHeight - navHeight - headerHeight, options.minBodyHeight);
+          var timeslotHeight = this.element.find('.wc-time-slots').outerHeight();
+          this.element.find('.wc-scrollable-grid').height(scrollContainerHeight);
+          if (timeslotHeight <= scrollContainerHeight) {
+            this.element.find('.wc-scrollbar-shim').width(0);
           }
+          else {
+            this.element.find('.wc-scrollbar-shim').width(16);
+          }
+          this._trigger('resize', this);
+        }
       },
 
       /*
@@ -549,47 +549,46 @@
         * delegation for greater efficiency
         */
       _setupEventDelegation: function() {
-          var self = this;
-          var options = this.options;
-          this.element.click(function(event) {
-            var $target = $(event.target),
-                freeBusyManager;
-            if ($target.data('preventClick')) {
-                return;
-            }
-            var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
-            if ($calEvent.length) {
-                freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data('calEvent'));
-                options.eventClick($calEvent.data('calEvent'), $calEvent, freeBusyManager, self.element, event);
-            }
-          }).mouseover(function(event) {
-            var $target = $(event.target);
+        var self = this;
+        var options = this.options;
+        this.element.click(function(event) {
+          var $target = $(event.target),
+              freeBusyManager;
+          if ($target.data('preventClick')) {
+            return;
+          }
+          var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
+          if ($calEvent.length) {
+            freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data('calEvent'));
+            options.eventClick($calEvent.data('calEvent'), $calEvent, freeBusyManager, self.element, event);
+          }
+        }).mouseover(function(event) {
+          var $target = $(event.target);
 
-            if (self._isDraggingOrResizing($target)) {
-                return;
-            }
+          if (self._isDraggingOrResizing($target)) {
+            return;
+          }
 
-            if ($target.hasClass('wc-cal-event')) {
-                options.eventMouseover($target.data('calEvent'), $target, event);
-            }
-          }).mouseout(function(event) {
-            var $target = $(event.target);
-            if (self._isDraggingOrResizing($target)) {
-                return;
-            }
-            if ($target.hasClass('wc-cal-event')) {
-                if ($target.data('sizing')) { return;}
-                options.eventMouseout($target.data('calEvent'), $target, event);
-
-            }
-          });
+          if ($target.hasClass('wc-cal-event')) {
+            options.eventMouseover($target.data('calEvent'), $target, event);
+          }
+        }).mouseout(function(event) {
+          var $target = $(event.target);
+          if (self._isDraggingOrResizing($target)) {
+            return;
+          }
+          if ($target.hasClass('wc-cal-event')) {
+            if ($target.data('sizing')) { return;}
+            options.eventMouseout($target.data('calEvent'), $target, event);
+          }
+        });
       },
 
       /*
         * check if a ui draggable or resizable is currently being dragged or resized
         */
       _isDraggingOrResizing: function($target) {
-          return $target.hasClass('ui-draggable-dragging') || $target.hasClass('ui-resizable-resizing');
+        return $target.hasClass('ui-draggable-dragging') || $target.hasClass('ui-resizable-resizing');
       },
 
       /*
@@ -613,10 +612,10 @@
         $weekDayColumns = $calendarContainer.find('.wc-day-column-inner');
         $weekDayColumns.each(function(i, val) {
             if (!options.readonly) {
-                self._addDroppableToWeekDay($(this));
-          if (options.allowEventCreation) {
-                  self._setupEventCreationForWeekDay($(this));
-          }
+              self._addDroppableToWeekDay($(this));
+              if (options.allowEventCreation) {
+                self._setupEventCreationForWeekDay($(this));
+              }
             }
         });
       },
