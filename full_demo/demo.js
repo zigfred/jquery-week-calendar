@@ -5,6 +5,7 @@ $(document).ready(function() {
    var id = 10;
 
    $calendar.weekCalendar({
+      displayOddEven:true,
       timeslotsPerHour : 4,
       allowCalEventOverlap : true,
       overlapEventsSeparate: true,

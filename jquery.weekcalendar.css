@@ -97,8 +97,8 @@ table.wc-time-slots {
 	vertical-align: top;
 }
 .wc-scrollable-grid .wc-day-column-last,
-.wc-scrollable-grid .wc-day-column-middle{border-left: 1px dashed #ddd;}
-.wc-scrollable-grid .wc-day-column-first{border-left: 3px double #ddd;}
+.wc-scrollable-grid .wc-day-column-middle{border-width: 0 0 0 1px; border-style: dashed;}
+.wc-scrollable-grid .wc-day-column-first{border-width: 0 0 0 3px; border-style: double;}
 
 .wc-day-column-inner {
 	width: 100%;
@@ -136,8 +136,17 @@ table.wc-time-slots {
 	width: 100%;
 }
 
-.wc-column-odd{}
-.wc-column-even{background-color:#ddddbe;}
+.wc-column-odd,
+.wc-column-even.ui-state-hover{background-image:none;border:none;}
+
+.wc-header .wc-today.ui-state-active{background-image:none;}
+.wc-time-slots .wc-day-column.ui-state-default{background:transparent;}
+.wc-time-slots .wc-today.ui-state-active{background-image:none;}
+.wc-header .wc-today.wc-day-column-header{border-width:0 3px; border-style: double;}
+.wc-today.ui-state-active.wc-day-column-middle{border-width:0;}
+.wc-today.ui-state-active.wc-day-column-first{border-left-width:3px;}
+.wc-today.ui-state-active.wc-day-column-last{border-right-width:3px;}
+
 .wc-full-height-column{
 	display:block;
 /*  width:100%;*/
@@ -187,15 +196,6 @@ table.wc-time-slots {
 	text-align: right;
 	padding-right: 10px;	
 }
-
-.wc-header .wc-today  {
-	font-weight: bold;
-}
-
-.wc-time-slots .wc-today {
-	background-color: #ffffcc;	
-}
-
 
 .wc-cal-event {
 	background-color: #68a1e5;	
