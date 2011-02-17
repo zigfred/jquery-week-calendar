@@ -98,7 +98,13 @@
 			noEvents : function() {
 				displayMessage("There are no events for this week");
 			},
-			data:"events.json"
+			data:"events.json",
+      reachedmindate: function($calendar, date){
+        displayMessage("You reached mindate");
+      },
+      reachedmaxdate: function($calendar, date){
+        displayMessage("You cannot go further");
+      }
 		});
 
 		function displayMessage(message) {
