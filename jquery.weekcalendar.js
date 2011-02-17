@@ -846,7 +846,9 @@
           var options = this.options,
               renderRow = '<tr class=\"wc-grid-row-oddeven\">',
               showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
-              oddEven;
+              oddEven,
+              // let's take advantage of the jquery ui framework
+              oddEvenClasses = {"odd":"wc-column-odd", "even": "ui-state-hover wc-column-even"};
 
           //now let's display oddEven placeholders
           for (var i = 1; i <= options.daysToShow; i++) {
@@ -855,7 +857,7 @@
                 oddEven = (oddEven == 'odd' ? 'even' : 'odd');
                 renderRow += '<td class=\"wc-day-column day-' + i + '\">';
                 renderRow += '<div class=\"wc-no-height-wrapper wc-oddeven-wrapper\">';
-                renderRow += '<div class=\"wc-full-height-column wc-column-' + oddEven + '\"></div>';
+                renderRow += '<div class=\"wc-full-height-column ' + oddEvenClasses[oddEven] + '\"></div>';
                 renderRow += '</div>';
                 renderRow += '</td>';
               }
@@ -865,7 +867,7 @@
                     oddEven = (oddEven == 'odd' ? 'even' : 'odd');
                     renderRow += '<td class=\"wc-day-column day-' + i + '\">';
                     renderRow += '<div class=\"wc-no-height-wrapper wc-oddeven-wrapper\">';
-                    renderRow += '<div class=\"wc-full-height-column wc-column-' + oddEven + '\" ></div>';
+                    renderRow += '<div class=\"wc-full-height-column ' + oddEvenClasses[oddEven] + '\" ></div>';
                     renderRow += '</div>';
                     renderRow += '</td>';
                 }
@@ -944,9 +946,10 @@
         renderRow += '</td>';
 
         //now let's display events placeholders
+        var _columnBaseClass = 'ui-state-default wc-day-column';
         for (var i = 1; i <= options.daysToShow; i++) {
           if (!showAsSeparatedUser) {
-            renderRow += '<td class=\"wc-day-column wc-day-column-first wc-day-column-last day-' + i + '\">';
+            renderRow += '<td class=\"' + _columnBaseClass + ' wc-day-column-first wc-day-column-last day-' + i + '\">';
             renderRow += '<div class=\"wc-full-height-column wc-day-column-inner day-' + i + '\"></div>';
             renderRow += '</td>';
           }
@@ -967,7 +970,7 @@
               else {
                 columnclass = columnclass.join(' ');
               }
-              renderRow += '<td class=\"wc-day-column ' + columnclass + ' day-' + i + '\">';
+              renderRow += '<td class=\"' + _columnBaseClass + ' ' + columnclass + ' day-' + i + '\">';
               renderRow += '<div class=\"wc-full-height-column wc-day-column-inner day-' + i;
               renderRow += ' wc-user-' + self._getUserIdFromIndex(j) + '\">';
               renderRow += '</div>';
@@ -1165,13 +1168,14 @@
           var options = this.options;
           var currentDay = self._cloneDate(self.element.data('startDate'));
           var showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length;
+          var todayClass = 'ui-state-active wc-today';
 
           self.element.find('.wc-header td.wc-day-column-header').each(function(i, val) {
             $(this).html(self._getHeaderDate(currentDay));
             if (self._isToday(currentDay)) {
-                $(this).addClass('wc-today');
+                $(this).addClass(todayClass);
             } else {
-                $(this).removeClass('wc-today');
+                $(this).removeClass(todayClass);
             }
             currentDay = self._addDays(currentDay, 1);
 
@@ -1182,9 +1186,9 @@
           {
             self.element.find('.wc-header td.wc-user-header').each(function(i, val) {
               if (self._isToday(currentDay)) {
-                  $(this).addClass('wc-today');
+                  $(this).addClass(todayClass);
               } else {
-                  $(this).removeClass('wc-today');
+                  $(this).removeClass(todayClass);
               }
               currentDay = ((i + 1) % options.users.length) ? currentDay : self._addDays(currentDay, 1);
             });
@@ -1197,9 +1201,13 @@
             $(this).data('startDate', self._cloneDate(currentDay));
             $(this).data('endDate', new Date(currentDay.getTime() + (MILLIS_IN_DAY)));
             if (self._isToday(currentDay)) {
-                $(this).parent().addClass('wc-today');
+                $(this).parent()
+                    .addClass(todayClass)
+                    .removeClass('ui-state-default');
             } else {
-                $(this).parent().removeClass('wc-today');
+                $(this).parent()
+                    .removeClass(todayClass)
+                    .addClass('ui-state-default');
             }
 
             if (!showAsSeparatedUser || !((i + 1) % options.users.length)) {

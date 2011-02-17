@@ -9,5 +9,9 @@
 .wc-business-hours .wc-time-header-cell{font-weight:bold;}
 .wc-am-pm,
 .wc-business-hours .wc-am-pm {font-size:1em;}
+.wc-header .wc-user-header,
+.wc-header .wc-day-column-header{border-width:0;}
+.wc-header .wc-today  {font-weight: bold;}
+
 
 
