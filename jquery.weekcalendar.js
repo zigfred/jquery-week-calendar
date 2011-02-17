@@ -460,12 +460,17 @@
         }
         var newDate = new Date(this.element.data('startDate').getTime());
         newDate.setDate(newDate.getDate() + this.options.daysToShow);
+        /*
+         * this part is deprecated as the dates are now 
+         * filtered on the loadCalEvents
+
         if (this.options.maxDate !== null) {
           var maxDate = this._cleanDate(this.options.maxDate);
           maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
           if (newDate.getTime() > maxDate.getTime())
             newDate = maxDate;
         }
+        */
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -476,11 +481,16 @@
         }
         var newDate = new Date(this.element.data('startDate').getTime());
         newDate.setDate(newDate.getDate() - this.options.daysToShow);
+        /*
+         * this part is deprecated as the dates are now 
+         * filtered on the loadCalEvents
+
         if (this.options.minDate !== null) {
           var minDate = this._cleanDate(this.options.minDate);
           if (newDate.getTime() < minDate.getTime())
             newDate = minDate;
         }
+        */
         this._clearCalendar();
         this._loadCalEvents(newDate);
       },
@@ -1080,11 +1090,15 @@
           var date, weekStartDate, weekEndDate, $weekDayColumns;
           var self = this;
           var options = this.options;
-          date = dateWithinWeek || options.date;
+          date = this._fixMinMaxDate(dateWithinWeek || options.date);
+          // if date is not provided
+          // or was not set
+          // or is different than old one
           if ((!date || !date.getTime) ||
               (!options.date || !options.date.getTime) ||
               date.getTime() != options.date.getTime()
           ) {
+            // trigger the changedate event
             this._trigger('changedate', this.element, date);
           }
           this.options.date = date;
@@ -1146,7 +1160,6 @@
                 }
               }
             });
-            console.log(_currentAjaxCall);
           }
           else if ($.isFunction(options.data)) {
             options.data(weekStartDate, weekEndDate,
@@ -1885,52 +1898,100 @@
       },
 
       /*
-        * returns the date on the first millisecond of the week
-        */
+       * returns the date on the first millisecond of the week
+       */
       _dateFirstDayOfWeek: function(date) {
-          var self = this;
-          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          var adjustedDate = new Date(midnightCurrentDate);
-          adjustedDate.setDate(adjustedDate.getDate() - self._getAdjustedDayIndex(midnightCurrentDate));
+        var self = this;
+        var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        var adjustedDate = new Date(midnightCurrentDate);
+        adjustedDate.setDate(adjustedDate.getDate() - self._getAdjustedDayIndex(midnightCurrentDate));
+        /*
+         * this part is deprecated as the dates are now 
+         * filtered on the loadCalEvents
 
-      if (this.options.minDate !== null) {
-        var minDate = this._cleanDate(this.options.minDate);
-        if (adjustedDate.getTime() < minDate.getTime())
-          adjustedDate = minDate;
-      }
-      if (this.options.maxDate !== null) {
-        var maxDate = this._cleanDate(this.options.maxDate);
-        maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
-        if (adjustedDate.getTime() > maxDate.getTime())
-          adjustedDate = maxDate;
-      }
+        if (this.options.minDate !== null) {
+          var minDate = this._cleanDate(this.options.minDate);
+          if (adjustedDate.getTime() < minDate.getTime())
+            adjustedDate = minDate;
+        }
+        if (this.options.maxDate !== null) {
+          var maxDate = this._cleanDate(this.options.maxDate);
+          maxDate.setDate(maxDate.getDate() - this.options.daysToShow + 1);
+          if (adjustedDate.getTime() > maxDate.getTime())
+            adjustedDate = maxDate;
+        }
+        */
+        return adjustedDate;
+      },
 
-          return adjustedDate;
-        },
+      /*
+       * returns the date on the first millisecond of the last day of the week
+       */
+      _dateLastDayOfWeek: function(date) {
+        var self = this;
+        var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        var adjustedDate = new Date(midnightCurrentDate);
+        var daysToAdd = (self.options.daysToShow - 1 - self._getAdjustedDayIndex(midnightCurrentDate));
+        adjustedDate.setDate(adjustedDate.getDate() + daysToAdd);
 
         /*
-        * returns the date on the first millisecond of the last day of the week
+         * this part is deprecated as the dates are now 
+         * filtered on the loadCalEvents
+
+        if (this.options.minDate !== null) {
+          var minDate = this._cleanDate(this.options.minDate);
+          minDate.setDate(minDate.getDate() + this.options.daysToShow - 1);
+          if (adjustedDate.getTime() < minDate.getTime())
+            adjustedDate = minDate;
+        }
+        if (this.options.maxDate !== null) {
+          var maxDate = this._cleanDate(this.options.maxDate);
+          if (adjustedDate.getTime() > maxDate.getTime())
+            adjustedDate = maxDate;
+        }
         */
-        _dateLastDayOfWeek: function(date) {
-          var self = this;
-          var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          var adjustedDate = new Date(midnightCurrentDate);
-          var daysToAdd = (self.options.daysToShow - 1 - self._getAdjustedDayIndex(midnightCurrentDate));
-          adjustedDate.setDate(adjustedDate.getDate() + daysToAdd);
 
-      if (this.options.minDate !== null) {
-        var minDate = this._cleanDate(this.options.minDate);
-        minDate.setDate(minDate.getDate() + this.options.daysToShow - 1);
-        if (adjustedDate.getTime() < minDate.getTime())
-          adjustedDate = minDate;
-      }
-      if (this.options.maxDate !== null) {
-        var maxDate = this._cleanDate(this.options.maxDate);
-        if (adjustedDate.getTime() > maxDate.getTime())
-          adjustedDate = maxDate;
-      }
+        return adjustedDate;
+      },
 
-          return adjustedDate;
+      /**
+       * fix the date if it is not within given options 
+       * minDate and maxDate
+       */
+      _fixMinMaxDate: function(date) {
+        var minDate, maxDate;
+        date = this._cleanDate(date);
+
+        // not less than minDate
+        if(this.options.minDate) {
+          minDate = this._cleanDate(this.options.minDate);
+          // midnight on minDate
+          minDate = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+          if(date.getTime() < minDate.getTime()) {
+            this._trigger('reachedmindate', this.element, date);
+          }
+          date = this._cleanDate(Math.max(date.getTime(), minDate.getTime()));
+        }
+
+        // not more than maxDate
+        if (this.options.maxDate) {
+          maxDate = this._cleanDate(this.options.maxDate);
+          // apply correction for max date if not startOnFirstDayOfWeek
+          // to make sure no further date is displayed.
+          // otherwise, the complement will still be shown
+          if (!this._startOnFirstDayOfWeek()) {
+            var day = maxDate.getDate() - this.options.daysToShow + 1;
+            maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), day);
+          }
+          // microsecond before midnight on maxDate
+          maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate(),23,59,59,999);
+          if(date.getTime() > maxDate.getTime()) {
+            this._trigger('reachedmaxdate', this.element, date);
+          }
+          date = this._cleanDate(Math.min(date.getTime(), maxDate.getTime()));
+        }
+        
+        return date;
       },
 
       /*
