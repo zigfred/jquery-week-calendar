@@ -848,7 +848,7 @@
               showAsSeparatedUser = options.showAsSeparateUsers && options.users && options.users.length,
               oddEven,
               // let's take advantage of the jquery ui framework
-              oddEvenClasses = {"odd":"wc-column-odd", "even": "ui-state-hover wc-column-even"};
+              oddEvenClasses = {'odd': 'wc-column-odd', 'even': 'ui-state-hover wc-column-even'};
 
           //now let's display oddEven placeholders
           for (var i = 1; i <= options.daysToShow; i++) {
@@ -1109,11 +1109,11 @@
                 _currentAjaxCall.abort();
               } else {
                 // due to the fact that jquery 1.4 does not detect a request was
-                // aborted, we need to replace the onreadystatechange and 
+                // aborted, we need to replace the onreadystatechange and
                 // execute the "complete" callback.
                 _currentAjaxCall.onreadystatechange = null;
                 _currentAjaxCall.abort();
-                _currentAjaxCall = null
+                _currentAjaxCall = null;
                 if (options.loading) {
                   options.loading(false);
                 }
@@ -1130,7 +1130,7 @@
                 // only prevent error with jQuery 1.5
                 // see issue #34. thanks to dapplebeforedawn
                 // (https://github.com/themouette/jquery-week-calendar/issues#issue/34)
-                if(errorThrown != 'abort'){
+                if (errorThrown != 'abort') {
                   alert('unable to get data, error:' + textStatus);
                 }
               },
@@ -1912,7 +1912,7 @@
       },
 
       /**
-       * fix the date if it is not within given options 
+       * fix the date if it is not within given options
        * minDate and maxDate
        */
       _fixMinMaxDate: function(date) {
@@ -1920,11 +1920,11 @@
         date = this._cleanDate(date);
 
         // not less than minDate
-        if(this.options.minDate) {
+        if (this.options.minDate) {
           minDate = this._cleanDate(this.options.minDate);
           // midnight on minDate
           minDate = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
-          if(date.getTime() < minDate.getTime()) {
+          if (date.getTime() < minDate.getTime()) {
             this._trigger('reachedmindate', this.element, date);
           }
           date = this._cleanDate(Math.max(date.getTime(), minDate.getTime()));
@@ -1941,13 +1941,13 @@
             maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), day);
           }
           // microsecond before midnight on maxDate
-          maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate(),23,59,59,999);
-          if(date.getTime() > maxDate.getTime()) {
+          maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate(), 23, 59, 59, 999);
+          if (date.getTime() > maxDate.getTime()) {
             this._trigger('reachedmaxdate', this.element, date);
           }
           date = this._cleanDate(Math.min(date.getTime(), maxDate.getTime()));
         }
-        
+
         return date;
       },
 
@@ -2026,7 +2026,7 @@
           if (typeof d == 'string') {
             // if is numeric
             if (!isNaN(parseFloat(d)) && isFinite()) {
-              return this._cleanDate(parseInt(d, 10))
+              return this._cleanDate(parseInt(d, 10));
             }
             // this is a human readable date
             return Date.parse(d) || new Date(d);
