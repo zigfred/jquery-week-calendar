@@ -561,7 +561,7 @@
         var child = parent.children();
         var width = child.innerWidth() - child.height(99).innerWidth();
         parent.remove();
-        return width || /* default to 16, we never know */ 16;
+        return width || /* default to 16 that is the average */ 16;
       },
 
       /*
