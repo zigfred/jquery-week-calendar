@@ -1,10 +1,14 @@
 /*
  * jQuery.weekCalendar v2.0-dev
  *
- * for support join us at the google group: http://groups.google.com/group/jquery-week-calendar
- * have a look to the wiki for documentation: http://wiki.github.com/themouette/jquery-week-calendar/
- * something went bad ? report an issue: http://github.com/themouette/jquery-week-calendar/issues
- * get the last version on github: http://github.com/themouette/jquery-week-calendar
+ * for support join us at the google group:
+ *    - http://groups.google.com/group/jquery-week-calendar
+ * have a look to the wiki for documentation:
+ *    - http://wiki.github.com/themouette/jquery-week-calendar/
+ * something went bad ? report an issue:
+ *    - http://github.com/themouette/jquery-week-calendar/issues
+ * get the last version on github:
+ *    - http://github.com/themouette/jquery-week-calendar
  *
  * Copyright (c) 2009 Rob Monie
  * Copyright (c) 2010 Julien MUETTON
@@ -12,7 +16,8 @@
  *    http://www.opensource.org/licenses/mit-license.php
  *    http://www.gnu.org/licenses/gpl.html
  *
- *    If you're after a monthly calendar plugin, check out http://arshaw.com/fullcalendar/
+ * If you're after a monthly calendar plugin, check out this one :
+ * http://arshaw.com/fullcalendar/
  */
 
 (function($) {
@@ -20,224 +25,236 @@
   var _v = $.fn.jquery.split('.'),
       _jQuery14OrLower = (10 * _v[0] + _v[1]) < 15;
 
-    $.widget('ui.weekCalendar', (function() {
-      var _currentAjaxCall;
-      return {
+  $.widget('ui.weekCalendar', (function() {
+    var _currentAjaxCall;
+    return {
       options: {
-          date: new Date(),
-          timeFormat: 'h:i a',
-          dateFormat: 'M d, Y',
-          alwaysDisplayTimeMinutes: true,
-          use24Hour: false,
-          daysToShow: 7,
-          minBodyHeight: 100,
-          firstDayOfWeek: function(calendar) {
-                      if ($(calendar).weekCalendar('option', 'daysToShow') != 5) {
-                        return 0;
-                      }
-                      else {
-                        //workweek
-                        return 1;
-                      }
-                  }, // 0 = Sunday, 1 = Monday, 2 = Tuesday, ... , 6 = Saturday
-          useShortDayNames: false,
-          timeSeparator: ' to ',
-          startParam: 'start',
-          endParam: 'end',
-          businessHours: {start: 8, end: 18, limitDisplay: false},
-          newEventText: 'New Event',
-          timeslotHeight: 20,
-          defaultEventLength: 2,
-          timeslotsPerHour: 4,
-          minDate: null,
-          maxDate: null,
-          buttons: true,
-          buttonText: {
-            today: 'today',
-            lastWeek: 'previous',
-            nextWeek: 'next'
-          },
-          switchDisplay: {},
-          scrollToHourMillis: 500,
-          allowCalEventOverlap: false,
-          overlapEventsSeparate: false,
-          readonly: false,
-          allowEventCreation: true,
-          draggable: function(calEvent, element) {
-            return true;
-          },
-          resizable: function(calEvent, element) {
-            return true;
-          },
-          eventClick: function(calEvent, element, dayFreeBusyManager, calendar, clickEvent) {
-          },
-          eventRender: function(calEvent, element) {
-            return element;
-          },
-          eventAfterRender: function(calEvent, element) {
-            return element;
-          },
-          eventRefresh: function(calEvent, element) {
-            return element;
-          },
-          eventDrag: function(calEvent, element) {
-          },
-          eventDrop: function(calEvent, element) {
-          },
-          eventResize: function(calEvent, element) {
-          },
-          eventNew: function(calEvent, element, dayFreeBusyManager, calendar, mouseupEvent) {
-          },
-          eventMouseover: function(calEvent, $event) {
-          },
-          eventMouseout: function(calEvent, $event) {
-          },
-          calendarBeforeLoad: function(calendar) {
-          },
-          calendarAfterLoad: function(calendar) {
-          },
-          noEvents: function() {
-          },
-          eventHeader: function(calEvent, calendar) {
-            var options = calendar.weekCalendar('option');
-            var one_hour = 3600000;
-            var displayTitleWithTime = calEvent.end.getTime() - calEvent.start.getTime() <= (one_hour / options.timeslotsPerHour);
-            if (displayTitleWithTime) {
-              return calendar.weekCalendar('formatDate', calEvent.start, options.timeFormat) + ': ' + calEvent.title;
-            }
-            else {
-              return calendar.weekCalendar('formatDate', calEvent.start, options.timeFormat) + options.timeSeparator + calendar.weekCalendar('formatDate', calEvent.end, options.timeFormat);
-            }
-          },
-          eventBody: function(calEvent, calendar) {
-            return calEvent.title;
-          },
-          shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-          longMonths: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-          shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-          longDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-          /* multi-users options */
-          /**
-          * the available users for calendar.
-          * if you want to display users separately, enable the showAsSeparateUsers option.
-          * if you provide a list of user and do not enable showAsSeparateUsers option, then
-          * only the events that belongs to one or several of given users
-          * @type {array}
-          */
-          users: [],
-          /**
-          * should the calendar be displayed with separate column for each users.
-          * note that this option does nothing if you do not provide at least one user.
-          * @type {boolean}
-          */
-          showAsSeparateUsers: true,
-          /**
-          * callback used to read user id from a user object.
-          * @param {Object} user the user to retrieve the id from.
-          * @param {number} index the user index from user list.
-          * @param {jQuery} calendar the calendar object.
-          * @return {int|String} the user id.
-          */
-          getUserId: function(user, index, calendar) {
-            return index;
-          },
-          /**
-          * callback used to read user name from a user object.
-          * @param {Object} user the user to retrieve the name from.
-          * @param {number} index the user index from user list.
-          * @param {jQuery} calendar the calendar object.
-          * @return {String} the user name.
-          */
-          getUserName: function(user, index, calendar) {
-            return user;
-          },
-          /**
-          * reads the id(s) of user(s) for who the event should be displayed.
-          * @param {Object} calEvent the calEvent to read informations from.
-          * @param {jQuery} calendar the calendar object.
-          * @return {number|String|Array} the user id(s) to appened the events for.
-          */
-          getEventUserId: function(calEvent, calendar) {
-            return calEvent.userId;
-          },
-          /**
-          * sets user id(s) to the calEvent
-          * @param {Object} calEvent the calEvent to set informations to.
-          * @param {jQuery} calendar the calendar object.
-          * @return {Object} the calEvent with modified user id.
-          */
-          setEventUserId: function(userId, calEvent, calendar) {
-            calEvent.userId = userId;
-            return calEvent;
-          },
-          /* freeBusy options */
-          /**
-          * should the calendar display freebusys ?
-          * @type {boolean}
-          */
-          displayFreeBusys: false,
-          /**
-          * read the id(s) for who the freebusy is available
-          * @param {Object} calEvent the calEvent to read informations from.
-          * @param {jQuery} calendar the calendar object.
-          * @return {number|String|Array} the user id(s) to appened the events for.
-          */
-          getFreeBusyUserId: function(calFreeBusy, calendar) {
-            return calFreeBusy.userId;
-          },
-          /**
-          * the default freeBusy object, used to manage default state
-          * @type {Object}
-          */
-          defaultFreeBusy: {free: false},
-          /**
-          * function used to display the freeBusy element
-          * @type {Function}
-          * @param {Object} freeBusy the freeBusy timeslot to render.
-          * @param {jQuery} $freeBusy the freeBusy HTML element.
-          * @param {jQuery} calendar the calendar element.
-          */
-          freeBusyRender: function(freeBusy, $freeBusy, calendar) {
-            if (!freeBusy.free) {
-              $freeBusy.addClass('free-busy-busy');
-            }
-            else {
-              $freeBusy.addClass('free-busy-free');
-            }
-            return $freeBusy;
-          },
-          /* other options */
-          /**
-          * true means start on first day of week, false means starts on startDate.
-          * @param {jQuery} calendar the calendar object.
-          * @type {Function|bool}
-          */
-          startOnFirstDayOfWeek: function(calendar) {
-            return $(calendar).weekCalendar('option', 'daysToShow') >= 5;
-          },
-          /**
-          * should the columns be rendered alternatively using odd/even class
-          * @type {boolean}
-          */
-          displayOddEven: false,
-          textSize: 13,
-          /**
-          * the title attribute for the calendar. possible placeholders are:
-          * <ul>
-          *  <li>%start%</li>
-          *  <li>%end%</li>
-          *  <li>%date%</li>
-          * </ul>
-          * @type {Function|string}
-          * @param {number} option daysToShow.
-          * @return {String} the title attribute for the calendar.
-          */
-          title: '%start% - %end%',
+        date: new Date(),
+        timeFormat: 'h:i a',
+        dateFormat: 'M d, Y',
+        alwaysDisplayTimeMinutes: true,
+        use24Hour: false,
+        daysToShow: 7,
+        minBodyHeight: 100,
+        firstDayOfWeek: function(calendar) {
+                  if ($(calendar).weekCalendar('option', 'daysToShow') != 5) {
+                    return 0;
+                  } else {
+                    //workweek
+                    return 1;
+                  }
+              }, // 0 = Sunday, 1 = Monday, 2 = Tuesday, ... , 6 = Saturday
+        useShortDayNames: false,
+        timeSeparator: ' to ',
+        startParam: 'start',
+        endParam: 'end',
+        businessHours: {start: 8, end: 18, limitDisplay: false},
+        newEventText: 'New Event',
+        timeslotHeight: 20,
+        defaultEventLength: 2,
+        timeslotsPerHour: 4,
+        minDate: null,
+        maxDate: null,
+        buttons: true,
+        buttonText: {
+          today: 'today',
+          lastWeek: 'previous',
+          nextWeek: 'next'
+        },
+        switchDisplay: {},
+        scrollToHourMillis: 500,
+        allowCalEventOverlap: false,
+        overlapEventsSeparate: false,
+        readonly: false,
+        allowEventCreation: true,
+        draggable: function(calEvent, element) {
+          return true;
+        },
+        resizable: function(calEvent, element) {
+          return true;
+        },
+        eventClick: function(calEvent, element, dayFreeBusyManager, 
+                                                      calendar, clickEvent) {
+        },
+        eventRender: function(calEvent, element) {
+          return element;
+        },
+        eventAfterRender: function(calEvent, element) {
+          return element;
+        },
+        eventRefresh: function(calEvent, element) {
+          return element;
+        },
+        eventDrag: function(calEvent, element) {
+        },
+        eventDrop: function(calEvent, element) {
+        },
+        eventResize: function(calEvent, element) {
+        },
+        eventNew: function(calEvent, element, dayFreeBusyManager, 
+                                                    calendar, mouseupEvent) {
+        },
+        eventMouseover: function(calEvent, $event) {
+        },
+        eventMouseout: function(calEvent, $event) {
+        },
+        calendarBeforeLoad: function(calendar) {
+        },
+        calendarAfterLoad: function(calendar) {
+        },
+        noEvents: function() {
+        },
+        eventHeader: function(calEvent, calendar) {
+          var options = calendar.weekCalendar('option');
+          var one_hour = 3600000;
+          var displayTitleWithTime = calEvent.end.getTime() - calEvent.start.getTime() <= (one_hour / options.timeslotsPerHour);
+          if (displayTitleWithTime) {
+            return calendar.weekCalendar(
+                        'formatDate', calEvent.start, options.timeFormat) +
+                        ': ' + calEvent.title;
+          } else {
+            return calendar.weekCalendar(
+                        'formatDate', calEvent.start, options.timeFormat) +
+                    options.timeSeparator +
+                    calendar.weekCalendar(
+                        'formatDate', calEvent.end, options.timeFormat);
+          }
+        },
+        eventBody: function(calEvent, calendar) {
+          return calEvent.title;
+        },
+        shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        longMonths: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        longDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        /* multi-users options */
         /**
-          * default options to pass to callback
-          * you can pass a function returning an object or a litteral object
-          * @type {object|function(#calendar)}
-          */
+         * the available users for calendar.
+         * if you want to display users separately, enable the
+         * showAsSeparateUsers option.
+         * if you provide a list of user and do not enable showAsSeparateUsers
+         * option, then only the events that belongs to one or several of
+         * given users will be displayed
+         * @type {array}
+         */
+        users: [],
+        /**
+         * should the calendar be displayed with separate column for each
+         * users.
+         * note that this option does nothing if you do not provide at least
+         * one user.
+         * @type {boolean}
+         */
+        showAsSeparateUsers: true,
+        /**
+         * callback used to read user id from a user object.
+         * @param {Object} user the user to retrieve the id from.
+         * @param {number} index the user index from user list.
+         * @param {jQuery} calendar the calendar object.
+         * @return {int|String} the user id.
+         */
+        getUserId: function(user, index, calendar) {
+          return index;
+        },
+        /**
+         * callback used to read user name from a user object.
+         * @param {Object} user the user to retrieve the name from.
+         * @param {number} index the user index from user list.
+         * @param {jQuery} calendar the calendar object.
+         * @return {String} the user name.
+         */
+        getUserName: function(user, index, calendar) {
+          return user;
+        },
+        /**
+         * reads the id(s) of user(s) for who the event should be displayed.
+         * @param {Object} calEvent the calEvent to read informations from.
+         * @param {jQuery} calendar the calendar object.
+         * @return {number|String|Array} the user id(s) to appened events for.
+         */
+        getEventUserId: function(calEvent, calendar) {
+          return calEvent.userId;
+        },
+        /**
+         * sets user id(s) to the calEvent
+         * @param {Object} calEvent the calEvent to set informations to.
+         * @param {jQuery} calendar the calendar object.
+         * @return {Object} the calEvent with modified user id.
+         */
+        setEventUserId: function(userId, calEvent, calendar) {
+          calEvent.userId = userId;
+          return calEvent;
+        },
+        /* freeBusy options */
+        /**
+         * should the calendar display freebusys ?
+         * @type {boolean}
+         */
+        displayFreeBusys: false,
+        /**
+         * read the id(s) for who the freebusy is available
+         * @param {Object} calEvent the calEvent to read informations from.
+         * @param {jQuery} calendar the calendar object.
+         * @return {number|String|Array} the user id(s) to appened events for.
+         */
+        getFreeBusyUserId: function(calFreeBusy, calendar) {
+          return calFreeBusy.userId;
+        },
+        /**
+         * the default freeBusy object, used to manage default state
+         * @type {Object}
+         */
+        defaultFreeBusy: {free: false},
+        /**
+         * function used to display the freeBusy element
+         * @type {Function}
+         * @param {Object} freeBusy the freeBusy timeslot to render.
+         * @param {jQuery} $freeBusy the freeBusy HTML element.
+         * @param {jQuery} calendar the calendar element.
+         */
+        freeBusyRender: function(freeBusy, $freeBusy, calendar) {
+          if (!freeBusy.free) {
+            $freeBusy.addClass('free-busy-busy');
+          }
+          else {
+            $freeBusy.addClass('free-busy-free');
+          }
+          return $freeBusy;
+        },
+        /* other options */
+        /**
+         * true means start on first day of week, false means starts on
+         * startDate.
+         * @param {jQuery} calendar the calendar object.
+         * @type {Function|bool}
+         */
+        startOnFirstDayOfWeek: function(calendar) {
+          return $(calendar).weekCalendar('option', 'daysToShow') >= 5;
+        },
+        /**
+         * should the columns be rendered alternatively using odd/even
+         * class
+         * @type {boolean}
+         */
+        displayOddEven: false,
+        textSize: 13,
+        /**
+         * the title attribute for the calendar. possible placeholders are:
+         * <ul>
+         *  <li>%start%</li>
+         *  <li>%end%</li>
+         *  <li>%date%</li>
+         * </ul>
+         * @type {Function|string}
+         * @param {number} option daysToShow.
+         * @return {String} the title attribute for the calendar.
+         */
+        title: '%start% - %end%',
+        /**
+         * default options to pass to callback
+         * you can pass a function returning an object or a litteral object
+         * @type {object|function(#calendar)}
+         */
         jsonOptions: {},
         headerSeparator: '<br />',
         /**
@@ -254,59 +271,60 @@
       },
 
       /***********************
-        * Initialise calendar *
-        ***********************/
+       * Initialise calendar *
+       ***********************/
       _create: function() {
-          var self = this;
-          self._computeOptions();
-          self._setupEventDelegation();
-          self._renderCalendar();
-          self._loadCalEvents();
-          self._resizeCalendar();
-          self._scrollToHour(self.options.date.getHours(), true);
+        var self = this;
+        self._computeOptions();
+        self._setupEventDelegation();
+        self._renderCalendar();
+        self._loadCalEvents();
+        self._resizeCalendar();
+        self._scrollToHour(self.options.date.getHours(), true);
 
-          if (this.options.resizeEvent) {
-            $(window).unbind(this.options.resizeEvent);
-            $(window).bind(this.options.resizeEvent, function() {
-              self._resizeCalendar();
-            });
+        if (this.options.resizeEvent) {
+          $(window).unbind(this.options.resizeEvent);
+          $(window).bind(this.options.resizeEvent, function() {
+            self._resizeCalendar();
+          });
         }
 
       },
 
       /********************
-        * public functions *
-        ********************/
+       * public functions *
+       ********************/
       /*
-        * Refresh the events for the currently displayed week.
-        */
+       * Refresh the events for the currently displayed week.
+       */
       refresh: function() {
-          this._loadCalEvents(this.element.data('startDate')); //reload with existing week
+        //reload with existing week
+        this._loadCalEvents(this.element.data('startDate'));
       },
 
       /*
-        * Clear all events currently loaded into the calendar
-        */
+       * Clear all events currently loaded into the calendar
+       */
       clear: function() {
-          this._clearCalendar();
+        this._clearCalendar();
       },
 
       /*
-        * Go to this week
-        */
+       * Go to this week
+       */
       today: function() {
-          this._clearCalendar();
-          this._loadCalEvents(new Date());
+        this._clearCalendar();
+        this._loadCalEvents(new Date());
       },
 
       /*
-        * Go to the previous week relative to the currently displayed week
-        */
+       * Go to the previous week relative to the currently displayed week
+       */
       prevWeek: function() {
-          //minus more than 1 day to be sure we're in previous week - account for daylight savings or other anomolies
-          var newDate = new Date(this.element.data('startDate').getTime() - (MILLIS_IN_WEEK / 6));
-          this._clearCalendar();
-          this._loadCalEvents(newDate);
+        //minus more than 1 day to be sure we're in previous week - account for daylight savings or other anomolies
+        var newDate = new Date(this.element.data('startDate').getTime() - (MILLIS_IN_WEEK / 6));
+        this._clearCalendar();
+        this._loadCalEvents(newDate);
       },
 
       /*
@@ -532,10 +550,18 @@
             this.element.find('.wc-scrollbar-shim').width(0);
           }
           else {
-            this.element.find('.wc-scrollbar-shim').width(16);
+            this.element.find('.wc-scrollbar-shim').width(this._findScrollBarWidth());
           }
           this._trigger('resize', this.element);
         }
+      },
+
+      _findScrollBarWidth: function() {
+        var parent = $('<div style="width:50px;height:50px;overflow:auto"><div/></div>').appendTo('body');
+        var child = parent.children();
+        var width = child.innerWidth() - child.height(99).innerWidth();
+        parent.remove();
+        return width || /* default to 16, we never know */ 16;
       },
 
       /*
