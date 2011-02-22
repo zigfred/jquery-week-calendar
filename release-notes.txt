@@ -1,3 +1,14 @@
+2.0-dev-2011-02-18
+- bugfixes (min/max date, ajax fast switching, theme roller compatibility)
+- better code quality (passes google closure linter except on line lengths)
+- added some events and documented it
+- documented prev, next functions and minDate, maxDate, date options.
+
+=============================================================================
+=== A lot of upgrades append, such as multi-user and free busy management ===
+=== This is not documented here, check the wiki for that.                 ===
+=============================================================================
+
 1.2.3 (Development)
 - Modifed the order of execution of eventDrop and eventRender so that drop callback occurs before rendering.
 - Migrated to jquery-ui-1.8 and jquery 1.4 (no longer supports previous versions)
