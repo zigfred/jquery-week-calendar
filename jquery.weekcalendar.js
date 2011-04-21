@@ -30,7 +30,7 @@
     return {
       options: {
         date: new Date(),
-        timeFormat: 'h:i a',
+        timeFormat: null,
         dateFormat: 'M d, Y',
         alwaysDisplayTimeMinutes: true,
         use24Hour: false,
@@ -110,14 +110,14 @@
           var displayTitleWithTime = calEvent.end.getTime() - calEvent.start.getTime() <= (one_hour / options.timeslotsPerHour);
           if (displayTitleWithTime) {
             return calendar.weekCalendar(
-                        'formatDate', calEvent.start, options.timeFormat) +
+                        'formatTime', calEvent.start) +
                         ': ' + calEvent.title;
           } else {
             return calendar.weekCalendar(
-                        'formatDate', calEvent.start, options.timeFormat) +
+                        'formatTime', calEvent.start) +
                     options.timeSeparator +
                     calendar.weekCalendar(
-                        'formatDate', calEvent.end, options.timeFormat);
+                        'formatTime', calEvent.end);
           }
         },
         eventBody: function(calEvent, calendar) {
@@ -457,8 +457,12 @@
       formatTime: function(date, format) {
           if (format) {
             return this._formatDate(date, format);
-          } else {
+          } else if(this.options.timeFormat) {
             return this._formatDate(date, this.options.timeFormat);
+          } else if(this.options.use24Hour) {
+            return this._formatDate(date, 'H:i');
+          } else {
+            return this._formatDate(date, 'h:i a');
           }
       },
 
