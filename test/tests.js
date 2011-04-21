@@ -40,8 +40,21 @@ test("Default Options", function() {
     
 });
 
-/*
-test("Override Default Options", function() {
-    
+test("Date internationalization", function() {
+
+  var $calendar = $("#calendar");
+  $calendar.weekCalendar({
+      date: new Date(),
+      firstDayOfWeek: $.datepicker.regional['fr'].firstDay,
+      shortDays: $.datepicker.regional['fr'].dayNamesShort,
+      longDays: $.datepicker.regional['fr'].dayNames,
+      shortMonths: $.datepicker.regional['fr'].monthNamesShort,
+      longMonths: $.datepicker.regional['fr'].monthNames,
+      dateFormat: "d F y"
+    });
+  
+  same($calendar.weekCalendar('formatDate', new Date('Apr 20 2011 14:50:32 GMT+0200')), '20 Avril 11');
+  same($calendar.weekCalendar('formatDate', new Date('Apr 20 2011 14:50:32 GMT+0200'), 'l j M Y'), 'Mercredi 20 Avril 2011');
+
+
 });
-*/
