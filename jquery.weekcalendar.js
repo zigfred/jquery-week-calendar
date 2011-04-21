@@ -2068,32 +2068,27 @@
         * http://jacwright.com/projects/javascript/date_format
         */
       _formatDate: function(date, format) {
-      var returnStr = '';
-      for (var i = 0; i < format.length; i++) {
-        var curChar = format.charAt(i);
-        if (i != 0 && format.charAt(i - 1) == '\\') {
-          returnStr += curChar;
+        var returnStr = '';
+        for (var i = 0; i < format.length; i++) {
+          var curChar = format.charAt(i);
+          if (i != 0 && format.charAt(i - 1) == '\\') {
+            returnStr += curChar;
+          }
+          else if (this._replaceChars[curChar]) {
+            returnStr += this._replaceChars[curChar](date, this);
+          } else if (curChar != '\\') {
+            returnStr += curChar;
+          }
         }
-        else if (this._replaceChars[curChar]) {
-          returnStr += this._replaceChars[curChar](date, this._formatDate);
-        } else if (curChar != '\\') {
-          returnStr += curChar;
-        }
-      }
-      return returnStr;
+        return returnStr;
       },
 
       _replaceChars: {
-      shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      longMonths: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-      shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      longDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-
       // Day
       d: function(date) { return (date.getDate() < 10 ? '0' : '') + date.getDate(); },
-      D: function(date) { return this.shortDays[date.getDay()]; },
+      D: function(date, calendar) { return calendar.options.shortDays[date.getDay()]; },
       j: function(date) { return date.getDate(); },
-      l: function(date) { return this.longDays[date.getDay()]; },
+      l: function(date, calendar) { return calendar.options.longDays[date.getDay()]; },
       N: function(date) { return date.getDay() + 1; },
       S: function(date) { return (date.getDate() % 10 == 1 && date.getDate() != 11 ? 'st' : (date.getDate() % 10 == 2 && date.getDate() != 12 ? 'nd' : (date.getDate() % 10 == 3 && date.getDate() != 13 ? 'rd' : 'th'))); },
       w: function(date) { return date.getDay(); },
@@ -2101,9 +2096,9 @@
       // Week
       W: function(date) { var d = new Date(date.getFullYear(), 0, 1); return Math.ceil((((date - d) / 86400000) + d.getDay() + 1) / 7); }, // Fixed now
       // Month
-      F: function(date) { return this.longMonths[date.getMonth()]; },
+      F: function(date, calendar) { return calendar.options.longMonths[date.getMonth()]; },
       m: function(date) { return (date.getMonth() < 9 ? '0' : '') + (date.getMonth() + 1); },
-      M: function(date) { return this.shortMonths[date.getMonth()]; },
+      M: function(date, calendar) { return calendar.options.shortMonths[date.getMonth()]; },
       n: function(date) { return date.getMonth() + 1; },
       t: function(date) { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 0).getDate() }, // Fixed now, gets #days of date
       // Year
@@ -2131,7 +2126,7 @@
       T: function(date) { var m = date.getMonth(); date.setMonth(0); var result = date.toTimeString().replace(/^.+ \(?([^\)]+)\)?$/, '$1'); date.setMonth(m); return result;},
       Z: function(date) { return -date.getTimezoneOffset() * 60; },
       // Full Date/Time
-      c: function(date, _formatDate) { return _formatDate('Y-m-d\\TH:i:sP'); }, // Fixed now
+      c: function(date, calendar) { return calendar._formatDate('Y-m-d\\TH:i:sP'); }, // Fixed now
       r: function(date) { return date.toString(); },
       U: function(date) { return date.getTime() / 1000; }
       },
