@@ -2093,7 +2093,7 @@
       D: function(date, calendar) { return calendar.options.shortDays[date.getDay()]; },
       j: function(date) { return date.getDate(); },
       l: function(date, calendar) { return calendar.options.longDays[date.getDay()]; },
-      N: function(date) { return date.getDay() + 1; },
+      N: function(date) { var _d = date.getDay(); return _d ? _d : 7; },
       S: function(date) { return (date.getDate() % 10 == 1 && date.getDate() != 11 ? 'st' : (date.getDate() % 10 == 2 && date.getDate() != 12 ? 'nd' : (date.getDate() % 10 == 3 && date.getDate() != 13 ? 'rd' : 'th'))); },
       w: function(date) { return date.getDay(); },
       z: function(date) { var d = new Date(date.getFullYear(), 0, 1); return Math.ceil((date - d) / 86400000); }, // Fixed now
@@ -2104,7 +2104,7 @@
       m: function(date) { return (date.getMonth() < 9 ? '0' : '') + (date.getMonth() + 1); },
       M: function(date, calendar) { return calendar.options.shortMonths[date.getMonth()]; },
       n: function(date) { return date.getMonth() + 1; },
-      t: function(date) { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 0).getDate() }, // Fixed now, gets #days of date
+      t: function(date) { var d =  date; return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate() }, // Fixed now, gets #days of date
       // Year
       L: function(date) { var year = date.getFullYear(); return (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)); },  // Fixed now
       o: function(date) { var d = new Date(date.valueOf()); d.setDate(d.getDate() - ((date.getDay() + 6) % 7) + 3); return d.getFullYear();}, //Fixed now
