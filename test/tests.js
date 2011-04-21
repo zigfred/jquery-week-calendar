@@ -1,4 +1,13 @@
 module('jQuery Week Calendar v2.0-dev');
+function formatTimeZone(){
+  var TZ = -(new Date()).getTimezoneOffset();
+  var TZ = {
+    'sign': (TZ < 0 ? '-' : '+'),
+    'hour': (Math.floor(TZ / 60)),
+    'minute': (TZ % 60)};
+
+  return TZ['sign'] + (TZ['hour'] < 10 ? '0' : '') + TZ['hour'] + ":" + (TZ['minute'] < 10 ? '0' : '') + TZ['minute'];
+}
 
 test('Default Options', function() {
 
@@ -72,8 +81,7 @@ test("issue # 60: eventHeader doesn't take care of use24Hour option", function()
     'timeSeparator': ' -> '
   });
   //get local timezone:
-  var TZ = -(new Date()).getTimezoneOffset();
-  TZ = (TZ < 0 ? '-' : '+') + (Math.floor(TZ / 60)) + ':' + (TZ % 60);
+  var TZ = formatTimeZone();
 
   expect(5);
   var _events = [{
