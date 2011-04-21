@@ -51,6 +51,42 @@ test('Default Options', function() {
 
 });
 
+test('date parsing', function(){
+  var $calendar = $('#calendar');
+  $calendar.weekCalendar();
+
+  expect(13);
+
+  var _cleanDate = $calendar.data('weekCalendar')._cleanDate,
+      _curdate;
+  ok($.isFunction(_cleanDate), 'check _cleanDate is a function');
+  
+  _curdate = _cleanDate(new Date('Fri Jul 16 2010 14:15:00'))
+  ok(_curdate instanceof Date, 'parsed date is a Date object');
+  equal(_curdate.getTime(), new Date('Fri Jul 16 2010 14:15:00').getTime());
+
+  _curdate = _cleanDate(1276683300000)
+  ok(_curdate instanceof Date, 'parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000);
+
+  _curdate = _cleanDate('2010-06-16T12:15:00+02:00')
+  ok(_curdate instanceof Date, 'parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000);
+
+  _curdate = _cleanDate('2010-06-16T12:15:00.000+02:00')
+  ok(_curdate instanceof Date, 'parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000);
+
+  _curdate = _cleanDate('Wed Jun 16 2010 12:15:00 GMT+0200');
+  ok(_curdate instanceof Date, 'parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000);
+
+  _curdate = _cleanDate('2010-06-16T12:15');
+  ok(_curdate instanceof Date, 'parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000);
+  
+});
+
 test('Date internationalization', function() {
 
   var $calendar = $('#calendar');
@@ -209,12 +245,12 @@ test("issue # 60: eventHeader doesn't take care of use24Hour option", function()
   expect(5);
   var _events = [{
       'id': 1,
-      'start': '2009-05-10T13:15:00.000' + TZ,
-      'end': '2009-05-10T14:15:00.000' + TZ,
+      'start': '2009-05-10T13:15:00' + TZ,
+      'end': '2009-05-10T14:15:00' + TZ,
       'title': 'Lunch with Mike'}, {
       'id': 1,
-      'start': '2009-05-10T10:15:00.000' + TZ,
-      'end': '2009-05-10T12:15:00.000' + TZ,
+      'start': '2009-05-10T10:15:00' + TZ,
+      'end': '2009-05-10T12:15:00' + TZ,
       'title': 'Lunch with Mike'}
       ];
   // trick to call private function
@@ -234,5 +270,7 @@ test("issue # 60: eventHeader doesn't take care of use24Hour option", function()
 
   same(eventHeaderFunc(_events[0], $calendar), '13:15 -> 14:15');
   same(eventHeaderFunc(_events[1], $calendar), '10:15 -> 12:15');
+
+  //check for title when 
 
 });
