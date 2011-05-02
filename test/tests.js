@@ -117,7 +117,7 @@ test('Date internationalization', function() {
                               shortMonths: $.datepicker.regional['en-GB'].monthNamesShort,
                               longMonths: $.datepicker.regional['en-GB'].monthNames
                           }); 
-  same($calendar.weekCalendar('formatDate', new Date('Apr 01 2011 14:50:32 GMT+0200')), '01 Fri 1 Friday 5 st 5 April 04 Apr 4 30 2011 11 pm PM 2 14 02 14 50 32 +0200 +02:00 7200 Fri Apr 01 2011 14:50:32 GMT+0200 (CEST) 1301662232'); 
+  same($calendar.weekCalendar('formatDate', new Date('Apr 01 2011 14:50:32 GMT+0200')), '01 Fri 1 Friday 5 st 5 April 04 Apr 4 30 2011 11 pm PM 2 14 02 14 50 32 +0200 +02:00 7200 Fri, 01 Apr 2011 14:50:32 +0200 1301662232'); 
 
 //Day
 
@@ -226,7 +226,7 @@ test('Date internationalization', function() {
 //FullTime
 
   //test 'r' - RFC2822 : Thu, 21 Dec 2000 16:01:07 +0200
-  same($calendar.weekCalendar('formatDate', new Date('Apr 01 2011 14:00:32 GMT+0200'), 'r'), 'Fri Apr 01 2011 14:00:32 GMT+0200 (CEST)');
+  same($calendar.weekCalendar('formatDate', new Date('Apr 01 2011 14:51:32 GMT+0200'), 'r'), 'Fri, 01 Apr 2011 14:51:32 +0200');
 
   //test 'U'- TimeStamp (since 1/1/1970)
   same($calendar.weekCalendar('formatDate', new Date('Apr 01 2011 14:50:32 GMT+0200'), 'U'), '1301662232');
@@ -319,6 +319,7 @@ test("issue #49: wrong calculation of DateLastMilliOfWeek", function() {
   equals(_curDate.toString(), (new Date('Apr 24 2011')).toString(), '_dateLastDayOfWeek returns sunday');
 
   _curDate = _dateLastMilliOfWeek(new Date('Apr 21 2011'));
+
   ok(_curDate instanceof Date, '_dateLastMilliOfWeek returns a date');
   equals(_curDate.toString(), (new Date('Apr 25 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next monday midnight');
 
