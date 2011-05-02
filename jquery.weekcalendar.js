@@ -437,9 +437,9 @@
             var endMillis = startMillis + options.millisPerTimeslot;
             times[i] = {
                 start: new Date(startMillis),
-                startFormatted: this._formatDate(new Date(startMillis), options.timeFormat),
+                startFormatted: this.formatTime(new Date(startMillis), options.timeFormat),
                 end: new Date(endMillis),
-                endFormatted: this._formatDate(new Date(endMillis), options.timeFormat)
+                endFormatted: this.formatTime(new Date(endMillis), options.timeFormat)
             };
             startMillis = endMillis;
           }
@@ -457,9 +457,9 @@
       formatTime: function(date, format) {
           if (format) {
             return this._formatDate(date, format);
-          } else if(this.options.timeFormat) {
+          } else if (this.options.timeFormat) {
             return this._formatDate(date, this.options.timeFormat);
-          } else if(this.options.use24Hour) {
+          } else if (this.options.use24Hour) {
             return this._formatDate(date, 'H:i');
           } else {
             return this._formatDate(date, 'h:i a');
@@ -2008,7 +2008,9 @@
         */
       _dateLastMilliOfWeek: function(date) {
           var lastDayOfWeek = this._dateLastDayOfWeek(date);
-          return new Date(lastDayOfWeek.getTime() + (MILLIS_IN_DAY));
+          lastDayOfWeek = this._cloneDate(lastDayOfWeek);
+          lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 1);
+          return lastDayOfWeek;
 
       },
 
@@ -2104,7 +2106,7 @@
       m: function(date) { return (date.getMonth() < 9 ? '0' : '') + (date.getMonth() + 1); },
       M: function(date, calendar) { return calendar.options.shortMonths[date.getMonth()]; },
       n: function(date) { return date.getMonth() + 1; },
-      t: function(date) { var d =  date; return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate() }, // Fixed now, gets #days of date
+      t: function(date) { var d = date; return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() }, // Fixed now, gets #days of date
       // Year
       L: function(date) { var year = date.getFullYear(); return (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)); },  // Fixed now
       o: function(date) { var d = new Date(date.valueOf()); d.setDate(d.getDate() - ((date.getDay() + 6) % 7) + 3); return d.getFullYear();}, //Fixed now

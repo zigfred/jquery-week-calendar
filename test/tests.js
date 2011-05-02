@@ -1,6 +1,6 @@
 module('jQuery Week Calendar v2.0-dev');
 function formatTimeZone(){
-  var TZ = -(new Date()).getTimezoneOffset();
+  var TZ = -(new Date('Apr 21 2011')).getTimezoneOffset();
   var TZ = {
     'sign': (TZ < 0 ? '-' : '+'),
     'hour': (Math.floor(TZ / 60)),
@@ -62,28 +62,28 @@ test('date parsing', function(){
   ok($.isFunction(_cleanDate), 'check _cleanDate is a function');
   
   _curdate = _cleanDate(new Date('Fri Jul 16 2010 14:15:00'))
-  ok(_curdate instanceof Date, 'parsed date is a Date object');
-  equal(_curdate.getTime(), new Date('Fri Jul 16 2010 14:15:00').getTime());
+  ok(_curdate instanceof Date, '"new Date(\'Fri Jul 16 2010 14:15:00\')": parsed date is a Date object');
+  equal(_curdate.getTime(), new Date('Fri Jul 16 2010 14:15:00').getTime(), 'expected time');
 
   _curdate = _cleanDate(1276683300000)
-  ok(_curdate instanceof Date, 'parsed date is a Date object');
-  equal(_curdate.getTime(), 1276683300000);
+  ok(_curdate instanceof Date, '"1276683300000": parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000, 'expected time');
 
   _curdate = _cleanDate('2010-06-16T12:15:00+02:00')
-  ok(_curdate instanceof Date, 'parsed date is a Date object');
-  equal(_curdate.getTime(), 1276683300000);
+  ok(_curdate instanceof Date, '"2010-06-16T12:15:00+02:00": parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000, 'expected time');
 
   _curdate = _cleanDate('2010-06-16T12:15:00.000+02:00')
-  ok(_curdate instanceof Date, 'parsed date is a Date object');
-  equal(_curdate.getTime(), 1276683300000);
+  ok(_curdate instanceof Date, '"2010-06-16T12:15:00.000+02:00": parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000, 'expected time');
 
   _curdate = _cleanDate('Wed Jun 16 2010 12:15:00 GMT+0200');
-  ok(_curdate instanceof Date, 'parsed date is a Date object');
-  equal(_curdate.getTime(), 1276683300000);
+  ok(_curdate instanceof Date, '"Wed Jun 16 2010 12:15:00 GMT+0200": parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000, 'expected time');
 
   _curdate = _cleanDate('2010-06-16T12:15');
-  ok(_curdate instanceof Date, 'parsed date is a Date object');
-  equal(_curdate.getTime(), 1276683300000);
+  ok(_curdate instanceof Date, '"2010-06-16T12:15": parsed date is a Date object');
+  equal(_curdate.getTime(), 1276683300000, 'expected time');
   
 });
 
@@ -91,7 +91,7 @@ test('Date internationalization', function() {
 
   var $calendar = $('#calendar');
   $calendar.weekCalendar({
-      date: new Date(),
+      date: new Date('Apr 21 2011'),
       firstDayOfWeek: $.datepicker.regional['fr'].firstDay,
       shortDays: $.datepicker.regional['fr'].dayNamesShort,
       longDays: $.datepicker.regional['fr'].dayNames,
@@ -272,5 +272,142 @@ test("issue # 60: eventHeader doesn't take care of use24Hour option", function()
   same(eventHeaderFunc(_events[1], $calendar), '10:15 -> 12:15');
 
   //check for title when 
+
+});
+//Test date Last|First Day|Milli OfWeek()
+test("issue #49: wrong calculation of DateLastMilliOfWeek", function() {
+  var $calendar = $('#calendar');
+  $calendar.weekCalendar({
+    date: new Date('Apr 21 2011'),
+    daysToShow: 7,
+    firstDayOfWeek: 1, 
+    startOnFirstDayOfWeek: true
+  });
+
+  var TZ = formatTimeZone();
+
+  expect(30);
+
+  var _events = [{
+      'id': 1,
+      'start': '2009-05-10T13:15:00' + TZ,
+      'end': '2009-05-10T14:15:00' + TZ,
+      'title': 'Lunch with Mike'}, {
+      'id': 1,
+      'start': '2009-05-10T10:15:00' + TZ,
+      'end': '2009-05-10T12:15:00' + TZ,
+      'title': 'Lunch with Mike'}
+      ];
+
+  var _privateInstance = $calendar.data('weekCalendar');
+  ok($.isFunction(_privateInstance._dateLastDayOfWeek), 'check _dateLastDayOfWeek is a function');
+  ok($.isFunction(_privateInstance._dateFirstDayOfWeek), 'check _dateFirstDayOfWeek is a function');
+  ok($.isFunction(_privateInstance._dateLastMilliOfWeek), 'check _dateLastMilliOfWeek is a function');
+
+  // create a closure to ease testing
+  var _dateLastDayOfWeek = function(){return _privateInstance._dateLastDayOfWeek.apply(_privateInstance, arguments);};
+  var _dateFirstDayOfWeek = function(){return _privateInstance._dateFirstDayOfWeek.apply(_privateInstance, arguments);};
+  var _dateLastMilliOfWeek = function(){return _privateInstance._dateLastMilliOfWeek.apply(_privateInstance, arguments);};
+  var _curDate, date;
+
+  _curDate = _dateFirstDayOfWeek(new Date('Apr 21 2011'));
+  ok(_curDate instanceof Date, '_dateFirstDayOfWeek returns a date');
+  equals(_curDate.toString(), (new Date('Apr 18 2011')).toString(), '_dateFirstDayOfWeek returns monday');
+
+  _curDate = _dateLastDayOfWeek(new Date('Apr 21 2011'));
+  ok(_curDate instanceof Date, '_dateLastDayOfWeek returns a date');
+  equals(_curDate.toString(), (new Date('Apr 24 2011')).toString(), '_dateLastDayOfWeek returns sunday');
+
+  _curDate = _dateLastMilliOfWeek(new Date('Apr 21 2011'));
+  ok(_curDate instanceof Date, '_dateLastMilliOfWeek returns a date');
+  equals(_curDate.toString(), (new Date('Apr 25 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next monday midnight');
+
+  //change firstDayOvWeek to sunday
+  $calendar.weekCalendar('option', 'firstDayOfWeek', 0);
+
+  //Middle of month
+  _curDate = _dateFirstDayOfWeek(new Date('Apr 21 2011'));
+  equals(_curDate.toString(), (new Date('Apr 17 2011')).toString(), '_dateFirstDayOfWeek returns sunday');
+
+  _curDate = _dateLastDayOfWeek(new Date('Apr 21 2011'));
+  equals(_curDate.toString(), (new Date('Apr 23 2011')).toString(), '_dateLastDayOfWeek returns monday');
+
+  _curDate = _dateLastMilliOfWeek(new Date('Apr 21 2011'));
+  equals(_curDate.toString(), (new Date('Apr 24 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next sunday midnight');
+
+  // case date for start of mont
+  _curDate = _dateFirstDayOfWeek(new Date('Apr 01 2011'));
+  equals(_curDate.toString(), (new Date('Mar 27 2011')).toString(), '_dateFirstDayOfWeek returns sunday 27 Mar');
+
+  _curDate = _dateLastDayOfWeek(new Date('Apr 01 2011'));
+  equals(_curDate.toString(), (new Date('Apr 2 2011')).toString(), '_dateLastDayOfWeek returns Sat 2 APr');
+
+  _curDate = _dateLastMilliOfWeek(new Date('Apr 01 2011'));
+  equals(_curDate.toString(), (new Date('Apr 03 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next sunday midnight 3 Apr ');
+
+
+  //change firstDayOvWeek to monday
+  $calendar.weekCalendar('option', 'firstDayOfWeek', 1);
+
+  // case date for end of month
+  _curDate = _dateFirstDayOfWeek(new Date('Apr 30 2011'));
+  equals(_curDate.toString(), (new Date('Apr 25 2011')).toString(), '_dateFirstDayOfWeek returns monday 25');
+
+  _curDate = _dateLastDayOfWeek(new Date('Apr 30 2011'));
+  equals(_curDate.toString(), (new Date('May 01 2011')).toString(), '_dateLastDayOfWeek returns Sun 1');
+
+  _curDate = _dateLastMilliOfWeek(new Date('Apr 30 2011'));
+  equals(_curDate.toString(), (new Date('May 02 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next monday midnight 2');
+
+  //change firstDayOvWeek to sunday
+  $calendar.weekCalendar('option', 'firstDayOfWeek', 0);
+
+  // case date for end of week
+  _curDate = _dateFirstDayOfWeek(new Date('Apr 23 2011'));
+  equals(_curDate.toString(), (new Date('Apr 17 2011')).toString(), '_dateFirstDayOfWeek returns sunday 17');
+
+  _curDate = _dateLastDayOfWeek(new Date('Apr 23 2011'));
+  equals(_curDate.toString(), (new Date('Apr 23 2011')).toString(), '_dateLastDayOfWeek returns Saturday  23');
+
+  _curDate = _dateLastMilliOfWeek(new Date('Apr 23 2011'));
+  equals(_curDate.toString(), (new Date('Apr 24 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next sunday midnight 24');
+
+
+  // case date in february leap year
+  _curDate = _dateFirstDayOfWeek(new Date('Mar 01 2000'));
+  equals(_curDate.toString(), (new Date('Feb 27 2000')).toString(), '_dateFirstDayOfWeek returns sunday 27');
+
+  _curDate = _dateLastDayOfWeek(new Date('Mar 01 2000'));
+  equals(_curDate.toString(), (new Date('Mar 04 2000')).toString(), '_dateLastDayOfWeek returns monday 4 ');
+
+  _curDate = _dateLastMilliOfWeek(new Date('Mar 01 2000'));
+  equals(_curDate.toString(), (new Date('Mar 05 2000 00:00:00')).toString(), '_dateLastMilliOfWeek returns next sunday midnight 5');
+
+  //change firstDayOvWeek to monday
+  $calendar.weekCalendar('option', 'firstDayOfWeek', 1);
+
+  // case daylight saving +
+  date = new Date('Mar 22 2011');
+  _curDate = _dateFirstDayOfWeek(date);
+  equals(_curDate.toString(), (new Date('Mar 21 2011')).toString(), '_dateFirstDayOfWeek returns monday 21');
+
+  _curDate = _dateLastDayOfWeek(date);
+  equals(_curDate.toString(), (new Date('Mar 27 2011')).toString(), '_dateLastDayOfWeek returns sunday 27');
+
+  _curDate = _dateLastMilliOfWeek(date);
+  equals(_curDate.toString(), (new Date('Mar 28 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next monday midnight 28');
+
+
+  // case daylight saving -
+  date = new Date('Oct 26 2011');
+  _curDate = _dateFirstDayOfWeek(date);
+  equals(_curDate.toString(), (new Date('Oct 24 2011')).toString(), '_dateFirstDayOfWeek returns monday 24');
+
+  _curDate = _dateLastDayOfWeek(date);
+  equals(_curDate.toString(), (new Date('Oct 30 2011')).toString(), '_dateLastDayOfWeek returns sunday 30 ');
+
+  _curDate = _dateLastMilliOfWeek(date);
+  equals(_curDate.toString(), (new Date('Oct 31 2011 00:00:00')).toString(), '_dateLastMilliOfWeek returns next monday midnight 31');
+
 
 });
