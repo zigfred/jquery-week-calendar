@@ -65,6 +65,7 @@
         scrollToHourMillis: 500,
         allowCalEventOverlap: false,
         overlapEventsSeparate: false,
+        totalEventsWidthPercentInOneColumn : 100,
         readonly: false,
         allowEventCreation: true,
         draggable: function(calEvent, element) {
@@ -510,6 +511,12 @@
       _setOption: function(key, value) {
         var self = this;
         if (self.options[key] != value) {
+          // event callback change, no need to re-render the events
+          if (key == 'beforeEventNew') {
+            self.options[key] = value;
+            return;
+          }
+
           // this could be made more efficient at some stage by caching the
           // events array locally in a store but this should be done in conjunction
           // with a proper binding model.
@@ -715,6 +722,13 @@
             $calendarContainer.find('.wc-title')
               .height(_height)
               .css('line-height', _height + 'px');
+        }else{
+            var calendarNavHtml = '';
+            calendarNavHtml += '<div class=\"ui-widget-header wc-toolbar\">';
+              calendarNavHtml += '<h1 class=\"wc-title\"></h1>';
+            calendarNavHtml += '</div>';
+            $(calendarNavHtml).appendTo($calendarContainer);
+
         }
       },
 
@@ -1062,8 +1076,10 @@
             var $newEvent = $weekDay.find('.wc-new-cal-event-creating');
 
             if ($newEvent.length) {
+                var createdFromSingleClick = !$newEvent.hasClass('ui-resizable-resizing');
+
                 //if even created from a single click only, default height
-                if (!$newEvent.hasClass('ui-resizable-resizing')) {
+                if (createdFromSingleClick) {
                   $newEvent.css({height: options.timeslotHeight * options.defaultEventLength}).show();
                 }
                 var top = parseInt($newEvent.css('top'));
@@ -1091,6 +1107,11 @@
                   self._adjustOverlappingEvents($weekDay);
                 }
 
+                self._trigger('beforeEventNew', event, {
+                  'calEvent': newCalEvent,
+                  'createdFromSingleClick': createdFromSingleClick,
+                  'calendar': self.element
+                });
                 options.eventNew(newCalEvent, $renderedCalEvent, freeBusyManager, self.element, event);
             }
           });
@@ -1160,7 +1181,10 @@
                 // only prevent error with jQuery 1.5
                 // see issue #34. thanks to dapplebeforedawn
                 // (https://github.com/themouette/jquery-week-calendar/issues#issue/34)
-                if (errorThrown != 'abort') {
+                // for 1.5+, aborted request mean errorThrown == 'abort'
+                // for prior version it means !errorThrown && !XMLHttpRequest.status
+                // fixes #55
+                if (errorThrown != 'abort' || ('' == errorThrown && !XMLHttpRequest.status)) {
                   alert('unable to get data, error:' + textStatus);
                 }
               },
@@ -1438,11 +1462,11 @@
 
                   // do we want events to be displayed as overlapping
                   if (self.options.overlapEventsSeparate) {
-                      var newWidth = 100 / curGroups.length;
+                      var newWidth = self.options.totalEventsWidthPercentInOneColumn / curGroups.length;
                       var newLeft = groupIndex * newWidth;
                   } else {
                       // TODO what happens when the group has more than 10 elements
-                      var newWidth = 100 - ((curGroups.length - 1) * 10);
+                      var newWidth = self.options.totalEventsWidthPercentInOneColumn - ((curGroups.length - 1) * 10);
                       var newLeft = groupIndex * 10;
                   }
                   $.each(curGroup, function() {
