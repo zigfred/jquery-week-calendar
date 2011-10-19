@@ -1359,8 +1359,8 @@
                 calEvent.start = start;
                 //end of this virual calEvent is set to the end of the day
                 calEvent.end.setFullYear(start.getFullYear());
-                calEvent.end.setMonth(start.getMonth());
                 calEvent.end.setDate(start.getDate());
+                calEvent.end.setMonth(start.getMonth());
                 calEvent.end.setHours(maxHour);
                 calEvent.end.setMinutes(0);
                 calEvent.end.setSeconds(0);
