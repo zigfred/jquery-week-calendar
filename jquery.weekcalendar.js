@@ -896,7 +896,6 @@
 
           //now let's display oddEven placeholders
           for (var i = 1; i <= options.daysToShow; i++) {
-            if (options.displayOddEven) {
               if (!showAsSeparatedUser) {
                 oddEven = (oddEven == 'odd' ? 'even' : 'odd');
                 renderRow += '<td class=\"wc-day-column day-' + i + '\">';
@@ -915,7 +914,6 @@
                     renderRow += '</div>';
                     renderRow += '</td>';
                 }
-              }
             }
           }
           renderRow += '</tr>';
