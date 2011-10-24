@@ -14,7 +14,7 @@ test('Default Options', function() {
     var $calendar = $('#calendar');
     $calendar.weekCalendar();
 
-  expect(25);
+  expect(29);
 
 	same($calendar.weekCalendar('option', 'alwaysDisplayTimeMinutes'), true);
 	same($calendar.weekCalendar('option', 'use24Hour'), false);
@@ -24,10 +24,9 @@ test('Default Options', function() {
 	same($calendar.weekCalendar('option', 'timeSeparator'), ' to ');
 	same($calendar.weekCalendar('option', 'startParam'), 'start');
 	same($calendar.weekCalendar('option', 'endParam'), 'end');
-/*	same($("#calendar").weekCalendar('option','businessHours.start'), 8);
-	same($("#calendar").weekCalendar('option','businessHours.end'), 18);
-	same($("#calendar").weekCalendar('option','businessHours.limitDisplay'), false);
-*/
+	same($("#calendar").weekCalendar('option','businessHours').start, 8);
+	same($("#calendar").weekCalendar('option','businessHours').end, 18);
+	same($("#calendar").weekCalendar('option','businessHours').limitDisplay, false);
     same($calendar.weekCalendar('option', 'newEventText'), 'New Event');
     same($calendar.weekCalendar('option', 'timeslotHeight'), 20);
     same($calendar.weekCalendar('option', 'defaultEventLength'), 2);
@@ -47,7 +46,7 @@ test('Default Options', function() {
     same($calendar.weekCalendar('option', 'getHeaderDate'), null);
     same($calendar.weekCalendar('option', 'preventDragOnEventCreation'), false);
 
-    //same($("#calendar").weekCalendar('option','draggable'), true);
+    same($("#calendar").weekCalendar('option','draggable')(), true);
 
 });
 
