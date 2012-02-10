@@ -2488,7 +2488,7 @@
 
             var $weekdays = self._findWeekDaysForFreeBusy(_freeBusy, $freeBusyPlaceHoders);
             //if freebusy has a placeholder
-            if ($weekdays.length) {
+            if ($weekdays && $weekdays.length) {
               $weekdays.each(function(index, day) {
                 var manager = $(day).data('wcFreeBusyManager');
                 manager.insertFreeBusy(_freeBusy);
