@@ -1776,7 +1776,7 @@
                 options.eventDrop(newCalEvent, calEvent, $calEvent);
 
                 var $newEvent = self._renderEvent(newCalEvent, self._findWeekDayForEvent(newCalEvent, $weekDayColumns));
-                $calEvent.hide();
+                $calEvent.remove();
 
                 $calEvent.data('preventClick', true);
 
