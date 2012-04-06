@@ -590,20 +590,27 @@
       _setupEventDelegation: function() {
         var self = this;
         var options = this.options;
+
         this.element.click(function(event) {
           var $target = $(event.target),
               freeBusyManager;
+
+          // click is disabled
           if ($target.data('preventClick')) {
             return;
           }
+
           var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
-          if ($calEvent.length) {
-            freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data('calEvent'));
-	    if (options.allowEventDelete && $target.hasClass('wc-cal-event-delete')) {
-		options.eventDelete($calEvent.data('calEvent'), $calEvent, freeBusyManager, self.element, event);
-	    }else{
-		options.eventClick($calEvent.data('calEvent'), $calEvent, freeBusyManager, self.element, event);
-	    }
+          if (!$calEvent.length) {
+            return;
+          }
+
+          freeBusyManager = self.getFreeBusyManagerForEvent($calEvent.data('calEvent'));
+
+          if (options.allowEventDelete && $target.hasClass('wc-cal-event-delete')) {
+            options.eventDelete($calEvent.data('calEvent'), $calEvent, freeBusyManager, self.element, event);
+          } else {
+            options.eventClick($calEvent.data('calEvent'), $calEvent, freeBusyManager, self.element, event);
           }
         }).mouseover(function(event) {
           var $target = $(event.target);
@@ -612,25 +619,31 @@
             return;
           }
 
-          if ($target.hasClass('wc-cal-event')) {
-            options.eventMouseover($target.data('calEvent'), $target, event);
+          var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
+
+          if (!$calEvent.length || !$calEvent.data('calEvent')) {
+            return;
           }
-          if ($target.hasClass('wc-time') || $target.hasClass('wc-title')) {
-            options.eventMouseover($target.parents('.wc-cal-event').data('calEvent'), $target, event);
-          }
+
+          options.eventMouseover($calEvent.data('calEvent'), $calEvent, event);
         }).mouseout(function(event) {
           var $target = $(event.target);
+
           if (self._isDraggingOrResizing($target)) {
             return;
           }
-          if ($target.hasClass('wc-cal-event')) {
-            if ($target.data('sizing')) { return;}
-            options.eventMouseout($target.data('calEvent'), $target, event);
+
+          var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
+
+          if (!$calEvent.length || !$calEvent.data('calEvent')) {
+            return;
           }
-          if ($target.hasClass('wc-time') || $target.hasClass('wc-title')) {
-            if ($target.data('sizing')) { return;}
-            options.eventMouseout($target.parents('.wc-cal-event').data('calEvent'), $target, event);
+
+          if ($calEvent.data('sizing')) {
+            return;
           }
+
+          options.eventMouseout($calEvent.data('calEvent'), $calEvent, event);
         });
       },
 
@@ -1783,7 +1796,7 @@
                 options.eventDrop(newCalEvent, calEvent, $calEvent);
 
                 var $newEvent = self._renderEvent(newCalEvent, self._findWeekDayForEvent(newCalEvent, $weekDayColumns));
-                $calEvent.remove();
+                $calEvent.hide();
 
                 $calEvent.data('preventClick', true);
 
