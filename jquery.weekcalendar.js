@@ -55,6 +55,7 @@
         timeslotsPerHour: 4,
         minDate: null,
         maxDate: null,
+        showHeader: true,
         buttons: true,
         buttonText: {
           today: 'today',
@@ -688,6 +689,7 @@
         */
       _renderCalendarButtons: function($calendarContainer) {
         var self = this, options = this.options;
+        if ( !options.showHeader ) return;
         if (options.buttons) {
             var calendarNavHtml = '';
 
