@@ -600,8 +600,10 @@
             return;
           }
 
-          var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
-          if (!$calEvent.length) {
+          var $calEvent = $target.hasClass('wc-cal-event') ?
+            $target :
+            $target.parents('.wc-cal-event');
+          if (!$calEvent.length || !$calEvent.data('calEvent')) {
             return;
           }
 
@@ -614,32 +616,30 @@
           }
         }).mouseover(function(event) {
           var $target = $(event.target);
+          var $calEvent = $target.hasClass('wc-cal-event') ?
+            $target :
+            $target.parents('.wc-cal-event');
 
-          if (self._isDraggingOrResizing($target)) {
+          if (!$calEvent.length || !$calEvent.data('calEvent')) {
             return;
           }
 
-          var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
-
-          if (!$calEvent.length || !$calEvent.data('calEvent')) {
+          if (self._isDraggingOrResizing($calEvent)) {
             return;
           }
 
           options.eventMouseover($calEvent.data('calEvent'), $calEvent, event);
         }).mouseout(function(event) {
           var $target = $(event.target);
-
-          if (self._isDraggingOrResizing($target)) {
-            return;
-          }
-
-          var $calEvent = $target.hasClass('wc-cal-event') ? $target : $target.parents('.wc-cal-event');
+          var $calEvent = $target.hasClass('wc-cal-event') ?
+            $target :
+            $target.parents('.wc-cal-event');
 
           if (!$calEvent.length || !$calEvent.data('calEvent')) {
             return;
           }
 
-          if ($calEvent.data('sizing')) {
+          if (self._isDraggingOrResizing($calEvent)) {
             return;
           }
 
@@ -647,11 +647,13 @@
         });
       },
 
-      /*
-        * check if a ui draggable or resizable is currently being dragged or resized
-        */
+      /**
+       * check if a ui draggable or resizable is currently being dragged or
+       * resized.
+       */
       _isDraggingOrResizing: function($target) {
-        return $target.hasClass('ui-draggable-dragging') || $target.hasClass('ui-resizable-resizing');
+        return $target.hasClass('ui-draggable-dragging') ||
+               $target.hasClass('ui-resizable-resizing');
       },
 
       /*
