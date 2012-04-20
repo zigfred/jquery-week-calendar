@@ -1318,28 +1318,33 @@
             });
           }
 
-          //now update the calendar title
-          if (this.options.title && this.options.title.length) {
-            var _date = this.options.date,
-                _start = self._cloneDate(self.element.data('startDate')),
-                _end = self._dateLastDayOfWeek(new Date(this._cloneDate(self.element.data('endDate')).getTime() - (MILLIS_IN_DAY))),
-                _title = this._getCalendarTitle();
-            _title = _title.split('%start%').join(self._formatDate(_start, options.dateFormat));
-            _title = _title.split('%end%').join(self._formatDate(_end, options.dateFormat));
-            _title = _title.split('%date%').join(self._formatDate(_date, options.dateFormat));
+          // now update the calendar title
+          if (this.options.title) {
+            var date = this.options.date,
+                start = self._cloneDate(self.element.data('startDate')),
+                end = self._dateLastDayOfWeek(new Date(this._cloneDate(self.element.data('endDate')).getTime() - (MILLIS_IN_DAY))),
+                title = this._getCalendarTitle(),
+                date_format = options.dateFormat;
+
+            // replace the placeholders contained in the title
+            title = _title.replace('%start%', self._formatDate(start, date_format));
+            title = _title.replace('%end%', self._formatDate(end, date_format));
+            title = _title.replace('%date%', self._formatDate(date, date_format));
+
             $('.wc-toolbar .wc-title', self.element).html(_title);
           }
           //self._clearFreeBusys();
       },
 
-      /*
-        * gets the calendar title options
-        */
+      /**
+       * Gets the calendar raw title.
+       */
       _getCalendarTitle: function() {
-      if ($.isFunction(this.options.title)) {
-        return this.options.title(this.options.daysToShow);
-      }
-      return this.options.title;
+        if ($.isFunction(this.options.title)) {
+          return this.options.title(this.options.daysToShow);
+        }
+
+        return this.options.title || '';
       },
 
       /*
