@@ -2125,21 +2125,31 @@
           return new Date(d.getTime());
       },
 
-      /*
-        * return a date for different representations
-        */
+      /**
+       * Return a Date instance for different representations.
+       * Valid representations are:
+       *  * timestamps
+       *  * Date objects
+       *  * textual representations (only these accepted by the Date
+       *    constructor)
+       *
+       *  @return {Date} The clean date object.
+       */
       _cleanDate: function(d) {
-          if (typeof d == 'string') {
+          if (typeof d === 'string') {
             // if is numeric
-            if (!isNaN(parseFloat(d)) && isFinite()) {
+            if (!isNaN(Number(d))) {
               return this._cleanDate(parseInt(d, 10));
             }
+
             // this is a human readable date
             return Date.parse(d) || new Date(d);
           }
+
           if (typeof d == 'number') {
             return new Date(d);
           }
+
           return d;
       },
 
