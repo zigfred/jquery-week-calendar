@@ -1347,100 +1347,101 @@
         return this.options.title || '';
       },
 
-      /*
-        * Render the events into the calendar
-        */
+      /**
+       * Render the events into the calendar
+       */
       _renderEvents: function(data, $weekDayColumns) {
-          var self = this;
-          var options = this.options;
-          var eventsToRender;
+        var self = this;
+        var options = this.options;
+        var eventsToRender, nbRenderedEvents = 0;
 
-          if (data.options) {
-            var updateLayout = false;
-            //update options
-            $.each(data.options, function(key, value) {
-                if (value !== options[key]) {
-                  options[key] = value;
-                  updateLayout = updateLayout || $.ui.weekCalendar.updateLayoutOptions[key];
-                }
-            });
+        if (data.options) {
+          var updateLayout = false;
+          // update options
+          $.each(data.options, function(key, value) {
+            if (value !== options[key]) {
+              options[key] = value;
+              updateLayout = updateLayout || $.ui.weekCalendar.updateLayoutOptions[key];
+            }
+          });
 
-            self._computeOptions();
+          self._computeOptions();
 
-            if (updateLayout) {
-                var hour = self._getCurrentScrollHour();
-                self.element.empty();
-                self._renderCalendar();
-                $weekDayColumns = self.element.find('.wc-time-slots .wc-day-column-inner');
-                self._updateDayColumnHeader($weekDayColumns);
-                self._resizeCalendar();
-                self._scrollToHour(hour, false);
+          if (updateLayout) {
+            var hour = self._getCurrentScrollHour();
+            self.element.empty();
+            self._renderCalendar();
+            $weekDayColumns = self.element.find('.wc-time-slots .wc-day-column-inner');
+            self._updateDayColumnHeader($weekDayColumns);
+            self._resizeCalendar();
+            self._scrollToHour(hour, false);
+          }
+        }
+        this._clearCalendar();
+
+        if ($.isArray(data)) {
+          eventsToRender = self._cleanEvents(data);
+        } else if (data.events) {
+          eventsToRender = self._cleanEvents(data.events);
+          self._renderFreeBusys(data);
+        }
+
+        $.each(eventsToRender, function(i, calEvent) {
+          // render a multi day event as various event :
+          // thanks to http://github.com/fbeauchamp/jquery-week-calendar
+          var initialStart = new Date(calEvent.start);
+          var initialEnd = new Date(calEvent.end);
+          var maxHour = self.options.businessHours.limitDisplay ? self.options.businessHours.end : 24;
+          var minHour = self.options.businessHours.limitDisplay ? self.options.businessHours.start : 0;
+          var start = new Date(initialStart);
+          var startDate = self._formatDate(start, 'Ymd');
+          var endDate = self._formatDate(initialEnd, 'Ymd');
+          var $weekDay;
+          var isMultiday = false;
+
+          while (startDate < endDate) {
+            calEvent.start = start;
+
+            // end of this virual calEvent is set to the end of the day
+            calEvent.end.setFullYear(start.getFullYear());
+            calEvent.end.setDate(start.getDate());
+            calEvent.end.setMonth(start.getMonth());
+            calEvent.end.setHours(maxHour, 0, 0);
+
+            if (($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
+              self._renderEvent(calEvent, $weekDay);
+              nbRenderedEvents += 1;
+            }
+
+            // start is set to the begin of the new day
+            start.setDate(start.getDate() + 1);
+            start.setHours(minHour, 0, 0);
+
+            startDate = self._formatDate(start, 'Ymd');
+            isMultiday = true;
+          }
+
+          if (start <= initialEnd) {
+            calEvent.start = start;
+            calEvent.end = initialEnd;
+
+            if (((isMultiday && calEvent.start.getTime() != calEvent.end.getTime()) || !isMultiday) && ($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
+              self._renderEvent(calEvent, $weekDay);
+              nbRenderedEvents += 1;
             }
           }
-          this._clearCalendar();
 
-          if ($.isArray(data)) {
-            eventsToRender = self._cleanEvents(data);
-          } else if (data.events) {
-            eventsToRender = self._cleanEvents(data.events);
-            //render the freebusys
-            self._renderFreeBusys(data);
-          }
-          $.each(eventsToRender, function(i, calEvent) {
-              //render a multi day event as various event :
-              //thanks to http://github.com/fbeauchamp/jquery-week-calendar
-              var initialStart = new Date(calEvent.start);
-              var initialEnd = new Date(calEvent.end);
-              var maxHour = self.options.businessHours.limitDisplay ? self.options.businessHours.end : 24;
-              var minHour = self.options.businessHours.limitDisplay ? self.options.businessHours.start : 0;
-              var start = new Date(initialStart);
-              var startDate = self._formatDate(start, 'Ymd');
-              var endDate = self._formatDate(initialEnd, 'Ymd');
-              var $weekDay;
-              var isMultiday = false;
+          // put back the initial start date
+          calEvent.start = initialStart;
+        });
 
-              while (startDate < endDate) {
-                calEvent.start = start;
-                //end of this virual calEvent is set to the end of the day
-                calEvent.end.setFullYear(start.getFullYear());
-                calEvent.end.setDate(start.getDate());
-                calEvent.end.setMonth(start.getMonth());
-                calEvent.end.setHours(maxHour);
-                calEvent.end.setMinutes(0);
-                calEvent.end.setSeconds(0);
-                if (($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
-                  self._renderEvent(calEvent, $weekDay);
-                }
-                //start is set to the begin of the new day
-                start.setDate(start.getDate() + 1);
-                start.setHours(minHour);
-                start.setMinutes(0);
-                start.setSeconds(0);
-                startDate = self._formatDate(start, 'Ymd');
-                isMultiday = true;
-              }
-              if (start <= initialEnd) {
-                calEvent.start = start;
-                calEvent.end = initialEnd;
-                if (((isMultiday && calEvent.start.getTime() != calEvent.end.getTime()) || !isMultiday) && ($weekDay = self._findWeekDayForEvent(calEvent, $weekDayColumns))) {
-                  self._renderEvent(calEvent, $weekDay);
-                }
-              }
+        $weekDayColumns.each(function() {
+          self._adjustOverlappingEvents($(this));
+        });
 
-              //put back the initial start date
-              calEvent.start = initialStart;
-          });
+        options.calendarAfterLoad(self.element);
 
-          $weekDayColumns.each(function() {
-            self._adjustOverlappingEvents($(this));
-          });
-
-          options.calendarAfterLoad(self.element);
-
-          if (!eventsToRender.length) {
-            options.noEvents();
-          }
-
+        !nbRenderedEvents && options.noEvents();
       },
 
       /*
