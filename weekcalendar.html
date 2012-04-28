@@ -60,8 +60,10 @@
 
   $(document).ready(function() {
     $('#calendar').weekCalendar({
-      timeslotsPerHour: 4,
-      data:eventData,
+      timeslotsPerHour: 6,
+      timeslotHeigh: 30,
+      hourLine: true,
+      data: eventData,
       height: function($calendar) {
         return $(window).height() - $('h1').outerHeight(true);
       },

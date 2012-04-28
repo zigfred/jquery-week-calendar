@@ -26,7 +26,8 @@
       _jQuery14OrLower = (10 * _v[0] + _v[1]) < 15;
 
   $.widget('ui.weekCalendar', (function() {
-    var _currentAjaxCall;
+    var _currentAjaxCall, _hourLineTimeout;
+
     return {
       options: {
         date: new Date(),
@@ -63,12 +64,13 @@
         },
         switchDisplay: {},
         scrollToHourMillis: 500,
-	allowEventDelete: false,
+        allowEventDelete: false,
         allowCalEventOverlap: false,
         overlapEventsSeparate: false,
-        totalEventsWidthPercentInOneColumn : 100,
+        totalEventsWidthPercentInOneColumn: 100,
         readonly: false,
         allowEventCreation: true,
+        hourLine: false,
         deletable: function(calEvent, element) {
           return true;
         },
@@ -1248,7 +1250,37 @@
 
           self._disableTextSelect($weekDayColumns);
 
+        _hourLineTimeout && clearInterval(_hourLineTimeout);
 
+        if (options.hourLine) {
+          self._drawCurrentHourLine();
+
+          _hourLineTimeout = setInterval(function() {
+            self._drawCurrentHourLine();
+          }, 60 * 1000); // redraw the line each minute
+        }
+      },
+
+      /**
+       * Draws a thin line which indicates the current time.
+       */
+      _drawCurrentHourLine: function() {
+        var d = new Date(),
+            options = this.options;
+
+        // first, we remove the old hourline if it exists
+        $('.wc-hourline', this.element).remove();
+
+        // then we recreate it
+        var nbHours = d.getHours() + d.getMinutes() / 60;
+        var positionTop = nbHours * options.timeslotHeight * options.timeslotsPerHour;
+
+        $('.wc-scrollable-grid .wc-today', this.element).append(
+          $('<div>', {
+            'class': 'wc-hourline',
+            style: 'top: ' + positionTop + 'px'
+          })
+        );
       },
 
       /*
