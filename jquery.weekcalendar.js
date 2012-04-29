@@ -1266,13 +1266,20 @@
        */
       _drawCurrentHourLine: function() {
         var d = new Date(),
-            options = this.options;
+            options = this.options,
+            businessHours = options.businessHours;
 
         // first, we remove the old hourline if it exists
         $('.wc-hourline', this.element).remove();
 
+        // the line does not need to be displayed
+        if (businessHours.limitDisplay && d.getHours() > businessHours.end) {
+          return;
+        }
+
         // then we recreate it
-        var nbHours = d.getHours() + d.getMinutes() / 60;
+        var paddingStart = businessHours.limitDisplay ? businessHours.start : 0;
+        var nbHours = d.getHours() - paddingStart + d.getMinutes() / 60;
         var positionTop = nbHours * options.timeslotHeight * options.timeslotsPerHour;
 
         $('.wc-scrollable-grid .wc-today', this.element).append(
