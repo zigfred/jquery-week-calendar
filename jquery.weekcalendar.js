@@ -1249,16 +1249,6 @@
             }
 
           self._disableTextSelect($weekDayColumns);
-
-        _hourLineTimeout && clearInterval(_hourLineTimeout);
-
-        if (options.hourLine) {
-          self._drawCurrentHourLine();
-
-          _hourLineTimeout = setInterval(function() {
-            self._drawCurrentHourLine();
-          }, 60 * 1000); // redraw the line each minute
-        }
       },
 
       /**
@@ -1281,11 +1271,12 @@
         var paddingStart = businessHours.limitDisplay ? businessHours.start : 0;
         var nbHours = d.getHours() - paddingStart + d.getMinutes() / 60;
         var positionTop = nbHours * options.timeslotHeight * options.timeslotsPerHour;
+        var lineWidth = $('.wc-scrollable-grid .wc-today', this.element).width() + 3;
 
         $('.wc-scrollable-grid .wc-today', this.element).append(
           $('<div>', {
             'class': 'wc-hourline',
-            style: 'top: ' + positionTop + 'px'
+            style: 'top: ' + positionTop + 'px; width: ' + lineWidth + 'px'
           })
         );
       },
@@ -1479,6 +1470,16 @@
         });
 
         options.calendarAfterLoad(self.element);
+
+        _hourLineTimeout && clearInterval(_hourLineTimeout);
+
+        if (options.hourLine) {
+          self._drawCurrentHourLine();
+
+          _hourLineTimeout = setInterval(function() {
+            self._drawCurrentHourLine();
+          }, 60 * 1000); // redraw the line each minute
+        }
 
         !nbRenderedEvents && options.noEvents();
       },
