@@ -1778,25 +1778,26 @@
           $calEvent.data('calEvent', newCalEvent);
       },
 
-      /*
-        * Add draggable capabilities to an event
-        */
+      /**
+       * Add draggable capabilities to an event
+       */
       _addDraggableToCalEvent: function(calEvent, $calEvent) {
-          var options = this.options;
-          $calEvent.draggable({
-            handle: '.wc-time',
-            containment: 'div.wc-time-slots',
-            snap: '.wc-day-column-inner',
-            snapMode: 'inner',
-            snapTolerance: options.timeslotHeight - 1,
-            revert: 'invalid',
-            opacity: 0.5,
-            grid: [$calEvent.outerWidth() + 1, options.timeslotHeight],
-            start: function(event, ui) {
-                var $calEvent = ui.draggable;
-                options.eventDrag(calEvent, $calEvent);
-            }
-          });
+        var options = this.options;
+
+        $calEvent.draggable({
+          handle: '.wc-time',
+          containment: 'div.wc-time-slots',
+          snap: '.wc-day-column-inner',
+          snapMode: 'inner',
+          snapTolerance: options.timeslotHeight - 1,
+          revert: 'invalid',
+          opacity: 0.5,
+          grid: [$calEvent.outerWidth() + 1, options.timeslotHeight],
+          start: function(event, ui) {
+            var $calEvent = ui.draggable || ui.helper;
+            options.eventDrag(calEvent, $calEvent);
+          }
+        });
       },
 
       /*
