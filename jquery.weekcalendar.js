@@ -2104,7 +2104,7 @@
       _cleanDate: function(d) {
           if (typeof d == 'string') {
             // if is numeric
-            if (!isNaN(parseFloat(d)) && isFinite(d)) {
+            if (!isNaN(Number(d))) {
               return this._cleanDate(parseInt(d, 10));
             }
             // this is a human readable date
