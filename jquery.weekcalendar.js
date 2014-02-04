@@ -92,8 +92,10 @@
         },
         eventDrag: function(calEvent, element) {
         },
-        eventDrop: function(calEvent, element) {
+        eventDrop: function(newCalEvent, oldCalEvent, element) {
         },
+	eventDropCallback: function(newCalEvent, calEvent, element){
+	},
         eventResize: function(calEvent, element) {
         },
         eventNew: function(calEvent, element, dayFreeBusyManager, 
@@ -1790,6 +1792,7 @@
                 setTimeout(function() {
                   $calEvent.remove();
                 }, 1000);
+                options.eventDropCallback(newCalEvent, calEvent, $newEvent);
 
             }
           });
